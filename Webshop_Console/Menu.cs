@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
+using Visual;
 
 namespace Webshop_Console;
 
@@ -136,20 +137,25 @@ internal class Menu
         switch (keyInfo.Key)
         {
             case ConsoleKey.UpArrow:
+
                 if (_selectedRow > 0)
                 {
                     _selectedRow--;
                     _selectedColumn = Math.Min(_selectedColumn, maxItemsPerRow - 1);
                 }
                 break;
+
             case ConsoleKey.DownArrow:
+
                 if (_selectedRow < totalRows - 1)
                 {
                     _selectedRow++;
                     _selectedColumn = Math.Min(_selectedColumn, ((_selectedRow == totalRows - 1) ? itemsInLastRow : maxItemsPerRow) - 1);
                 }
                 break;
+
             case ConsoleKey.LeftArrow:
+
                 if(_selectedColumn > 0)
                     _selectedColumn--;
                 else if (_selectedRow > 0)
@@ -159,15 +165,29 @@ internal class Menu
                     _selectedColumn = prevRowMaxColumns;
                 }
                 break;
+
+            case ConsoleKey.RightArrow:
+
+                if (_selectedColumn < maxColoumsInCurrentRow - 1)
+                    _selectedColumn++;
+                else if(_selectedRow < totalRows - 1)
+                {
+                    _selectedRow++;
+                    _selectedColumn = 0;
+                }
+                break;
+
             case ConsoleKey.Enter:
-                int selectedIndex = _selectedRow * maxItemsPerRow + _selectedColumn;
-                if (selectedIndex >= 0 && selectedIndex < _options.Count)
-                    _options[selectedIndex].Action?.Invoke();
-                break;
-            case ConsoleKey.Escape:
-                _isRunning = false;
-                break;
-        }
+
+                        int selectedIndex = _selectedRow * maxItemsPerRow + _selectedColumn;
+                        if (selectedIndex >= 0 && selectedIndex < _options.Count)
+                            _options[selectedIndex].Action?.Invoke();
+                        break;
+
+                    case ConsoleKey.Escape:
+                        _isRunning = false;
+                        break;
+                    }
     }
 
     public void Close()
@@ -226,7 +246,7 @@ internal class Menu
             Console.CursorVisible = false;
             Console.SetCursorPosition(0, startY + (totalRow * (_boxHeight + 1)) + 1);
             Console.ForegroundColor = _normalColor;
-            Console.WriteLine("Use arrow keys to navigate, Enter to select, Esc to exit");
+            Console.WriteLine($"Use arrow keys to navigate | {Color.G("Enter")} to select | {Color.R("Esc")} to exit");
 
            
         }

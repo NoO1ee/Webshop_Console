@@ -20,4 +20,10 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <Reference Include="Visual">
+      <HintPath>..\..\Visual\Visual\bin\Release\net9.0\publish\Color\Visual.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
