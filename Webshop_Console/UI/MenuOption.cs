@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Webshop_Console;
+namespace Webshop_Console.UI;
 
 public class MenuOption
 {

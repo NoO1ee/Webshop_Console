@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore.Storage;
 using Visual;
 
-namespace Webshop_Console;
+namespace Webshop_Console.UI;
 
 internal class Menu
 {
@@ -67,7 +67,7 @@ internal class Menu
 
     int CalculateBoxWidth(int itemsPerRow)
     {
-        int totalSpaceForBoxes = _windowWidth - (itemsPerRow * 2) - 4;
+        int totalSpaceForBoxes = _windowWidth - itemsPerRow * 2 - 4;
         int calculatedWidth = totalSpaceForBoxes / itemsPerRow;
 
         return Math.Max(_minBoxWidth, calculatedWidth);
@@ -107,7 +107,7 @@ internal class Menu
                 text = text.Substring(0, boxWidth - 7) + "...";
 
             int textX = x + (boxWidth - text.Length) / 2;
-            int textY = y + (_boxHeight / 2);
+            int textY = y + _boxHeight / 2;
 
             Console.SetCursorPosition(textX, textY);
             Console.ForegroundColor = textColor;
@@ -132,7 +132,7 @@ internal class Menu
         if (itemsInLastRow == 0 && _options.Count > 0)
             itemsInLastRow = maxItemsPerRow;
 
-        int maxColoumsInCurrentRow = (_selectedRow == totalRows - 1) ? itemsInLastRow : maxItemsPerRow;
+        int maxColoumsInCurrentRow = _selectedRow == totalRows - 1 ? itemsInLastRow : maxItemsPerRow;
 
         switch (keyInfo.Key)
         {
@@ -150,7 +150,7 @@ internal class Menu
                 if (_selectedRow < totalRows - 1)
                 {
                     _selectedRow++;
-                    _selectedColumn = Math.Min(_selectedColumn, ((_selectedRow == totalRows - 1) ? itemsInLastRow : maxItemsPerRow) - 1);
+                    _selectedColumn = Math.Min(_selectedColumn, (_selectedRow == totalRows - 1 ? itemsInLastRow : maxItemsPerRow) - 1);
                 }
                 break;
 
@@ -161,7 +161,7 @@ internal class Menu
                 else if (_selectedRow > 0)
                 {
                     _selectedRow--;
-                    int prevRowMaxColumns = (_selectedRow == totalRows - 1) ? itemsInLastRow : maxItemsPerRow;
+                    int prevRowMaxColumns = _selectedRow == totalRows - 1 ? itemsInLastRow : maxItemsPerRow;
                     _selectedColumn = prevRowMaxColumns;
                 }
                 break;
@@ -227,7 +227,7 @@ internal class Menu
         
         for (int i = 0; i < totalRow; i++)
         {
-            int itemsInCurrentRow = Math.Min(maxItemsPerRow, _options.Count - (i * maxItemsPerRow));
+            int itemsInCurrentRow = Math.Min(maxItemsPerRow, _options.Count - i * maxItemsPerRow);
             int totalRowWidth = itemsInCurrentRow * (boxWidth + 2);
             int startX = (_windowWidth - totalRowWidth) / 2;
             
@@ -238,13 +238,13 @@ internal class Menu
                 int index = i * maxItemsPerRow + y;
                 int boxX = startX + y * (boxWidth + 2);
 
-                bool isSelected = (i == _selectedRow && y == _selectedColumn);
+                bool isSelected = i == _selectedRow && y == _selectedColumn;
 
-                DrawBox(boxX, startY + (i * (_boxHeight + 1)), boxWidth, _options[index].Text, isSelected);
+                DrawBox(boxX, startY + i * (_boxHeight + 1), boxWidth, _options[index].Text, isSelected);
             }
 
             Console.CursorVisible = false;
-            Console.SetCursorPosition(0, startY + (totalRow * (_boxHeight + 1)) + 1);
+            Console.SetCursorPosition(0, startY + totalRow * (_boxHeight + 1) + 1);
             Console.ForegroundColor = _normalColor;
             Console.WriteLine($"Use arrow keys to navigate | {Color.G("Enter")} to select | {Color.R("Esc")} to exit");
 
@@ -269,8 +269,23 @@ internal class Menu
             }
             catch (Exception e)
             {
-                System.Threading.Thread.Sleep(100);
+                Thread.Sleep(100);
             }
         }
+    }
+
+
+    public static async Task ShowMenu(string consoleTitle, string menuTitle, (string optionText, Action action)[] options, ConsoleColor titleColor = ConsoleColor.DarkYellow, ConsoleColor textColor = ConsoleColor.White, ConsoleColor selectedColor = ConsoleColor.Red)
+    {
+        Console.Title = consoleTitle;
+
+        Menu menu = new Menu(menuTitle);
+        foreach (var (text, action) in options)
+        {
+            menu.AddOption(text, action);
+        }
+
+        menu.SetColors(titleColor, textColor, selectedColor);
+        menu.Display();
     }
 }
