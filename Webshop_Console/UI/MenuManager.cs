@@ -22,17 +22,26 @@ public class MenuManager
 
     public async Task ShowMainMenuAsync()
     {
-        await Menu.ShowMenu("Duck4Hire", "Log in / Register", new (string, Action)[]
+        var options = new[]
         {
-            ("Log in", () => RunAsync(async () => await HandleLogin())),
-            ("Register", () => RunAsync(async () => { await _auth.RegisterAsync(); })),
-            ("Exit", () => Environment.Exit(0))
-        });
+            Option("Log in", HandleLoginAsync),
+            Option("Register", _auth.RegisterAsync),
+            Option("Exit", () => Environment.Exit(0))
+        };
+        await Menu.ShowMenu("Duck4Hire", "Log in / Register", options);
     }
 
+    // Kör asynkrona actions i en sync action
     void RunAsync(Func<Task> func) => Task.Run(func).Wait();
 
-    async Task HandleLogin()
+    // För att slå ihop label och Func<Task> till string, action
+    (string, Action) Option(string label, Func<Task> action) => (label, () => RunAsync(action));
+
+    (string, Action) Option(string label, Action action) => (label, action);
+
+    (string, Action) LogoutOption() => Option("Logga ut", () => ShowMainMenuAsync().Wait());
+
+    async Task HandleLoginAsync()
     {
         var user = await _auth.LoginAsync();
         if (user != null)
@@ -41,31 +50,58 @@ public class MenuManager
 
     async Task RouteByRoleAsync(User user)
     {
-        if (user.Authoriries.Any(r => r.IsAdmin))
-            await ShowAdminMenu();
-        else if (user.Authoriries.Any(r => (bool)r.IsOwner!))
-            await ShowOwnerMenu();
+        if (user.Authorities.Any(r => r.IsOwner))
+            await ShowOwnerMenuAsync(user);
+        else if (user.Authorities.Any(r => r.IsAdmin))
+            await ShowAdminMenuAsync();
         else
-            await ShowUserMenu();
+            await ShowUserMenuAsync();
     }
 
-    Task ShowAdminMenu() => Menu.ShowMenu("Adminpanel", "Välj", new (string, Action)[]
+    Task ShowAdminMenuAsync()
     {
-        ("Se ordrar", () => Console.WriteLine("Implementera....")),
-        ("Logga ut", () => ShowMainMenuAsync().Wait())
-    });
+        var options = new[]
+        {
+            Option("Se ordrar", ShowOrders),
+            LogoutOption()
+        };
+        return Menu.ShowMenu("Adminpanel", "Adminpanel", options);
+    }
 
-    Task ShowOwnerMenu() => Menu.ShowMenu("Ägarpanel", "Välj", new (string, Action)[]
+    Task ShowOwnerMenuAsync(User owner)
     {
-        ("Se statestik", () => Console.WriteLine("Implementera.....")),
-        ("Ändra titel i main menu", () => Console.WriteLine("Implementera.....")),
-        ("Logga ut", () => ShowMainMenuAsync().Wait())
-    });
+        var options = new List<(string, Action)>
+        {
+            Option("Se statistik", ShowStatistics),
+            Option("Hantera användares roller", ManageUserRoles),
+            LogoutOption()
+        };
 
-    Task ShowUserMenu() => Menu.ShowMenu("Användarpanel", "Välj", new (string, Action)[]
+        return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options.ToArray());
+    }
+
+    Task ShowUserMenuAsync()
     {
-        ("Visa produkter", () => Console.WriteLine("Implmentera....")),
-        ("Logga ut", () => ShowMainMenuAsync().Wait())
-    });
+        var options = new[]
+        {
+            Option("Visa produkter", ShowProducts),
+            LogoutOption()
+        };
+        return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
+    }
+
+    // Ta bort senare när jag har implementerat...
+    void ShowOrders() => Console.WriteLine("Implementera...");
+    void ShowStatistics() => Console.WriteLine("Implementera...");
+    void ShowProducts() => Console.WriteLine("Implementera...");
+
+    void ManageUserRoles()
+    {
+        //Lista alla användare
+        //Låt ägare välja användare
+        //Hämta användare (Authorities)
+        //Visa roller. lägga til eller ta bort.
+        Console.WriteLine("Implementera...");
+    }
 
 }

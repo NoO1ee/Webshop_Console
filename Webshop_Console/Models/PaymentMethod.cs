@@ -1,13 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Webshop_Console.Models;
 
-namespace Webshop_Console.Models;
-
-public class PaymentMethod
+public class PaymentMethod : BaseEntity
 {
-    public int Id { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
 }

@@ -1,23 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Webshop_Console.Models;
 
-namespace Webshop_Console.Models;
-
-public class Article
+public class Article : BaseEntity
 {
-    public int ID { get; set; }
-    public string Name { get; set; }
+    public string? Name { get; set; }
     public string EanCode { get; set; } = string.Empty;
     public string ArticleCode { get; set; } = string.Empty;
     public int Storage { get; set; } = 0;
+    public string? Bio { get; set; }
     public decimal Price { get; set; }
     public bool IsFeatured { get; set; } = false;
 
-    public int SuplierId { get; set; }
-    public Supplier Suplier { get; set; } = null!;
+    public int SupplierId { get; set; }
+    public Supplier Supplier { get; set; } = null!;
 
     public int UnitId { get; set; }
     public Unit Unit { get; set; } = null!;

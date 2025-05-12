@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿namespace Webshop_Console.Models;
 
-namespace Webshop_Console.Models;
-
-public class Order
+public class Order : BaseEntity
 {
-    public int Id { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.Now;
     public decimal TotalAmount { get; set; }
 
@@ -16,6 +9,7 @@ public class Order
     public User? User { get; set; }
     public List<OrderItem> Items { get; set; } = new List<OrderItem>();
 
+    public int? PaymentId { get; set; }
     public Payment? Payment { get; set; }
 
 }

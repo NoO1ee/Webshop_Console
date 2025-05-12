@@ -1,10 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
@@ -14,7 +13,7 @@ public class AuthService
     readonly MyDbContext _db;
     public AuthService(MyDbContext db) => _db = db;
 
-    string ReadPassword()
+    private static string ReadPassword()
     {
         var sb = new StringBuilder();
         ConsoleKey key;
@@ -35,7 +34,7 @@ public class AuthService
 
     }
 
-    string Hash(string text)
+    private static string Hash(string text)
     {
         using var sha = SHA256.Create();
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(text));
@@ -45,16 +44,20 @@ public class AuthService
     public async Task<User?> LoginAsync()
     {
         Console.Clear();
-        Console.Write("Ange användarnamn: ");
-        var username = Console.ReadLine();
+        var username = Prompt("Ange användarnamn: ");
+        var password = Prompt("Ange lösenord: ", hideInput: true);
 
-        Console.Write("Ange lösenord: ");
-        var password = ReadPassword();
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Användarnamn och lösenord får inte vara tomma");
+            await Task.Delay(1000);
+            return null;
+        }
 
         var hashed = Hash(password);
         var user = await _db.Users
-            .Include(u => u.Authoriries)
-            .FirstOrDefaultAsync(u => u.UserName == username && u.Password == hashed);
+            .Include(u => u.Authorities)
+            .FirstOrDefaultAsync(u => u.Username == username && u.PasswordHash == hashed);
 
         if (user == null)
         {
@@ -63,46 +66,61 @@ public class AuthService
             return null;
         }
 
-        Console.WriteLine($"Välkommen {user.UserName}!\n");
+        Console.WriteLine($"Välkommen {user.Username}!\n");
+        await Task.Delay(1000);
         return user;
+    }
+
+    private string? Prompt(string message, bool hideInput = false)
+    {
+        Console.Write(message);
+        return hideInput ? ReadPassword() : Console.ReadLine()?.Trim();
+    }
+
+    private async Task<Authority?> GetRoleAsync(string roleName)
+    {
+        return await _db.Authorities.FirstOrDefaultAsync(a => a.Name!.Equals(roleName, StringComparison.OrdinalIgnoreCase));
     }
 
     public async Task RegisterAsync()
     {
         Console.Clear();
-        Console.Write("Välj användarnamn: ");
-        var username = Console.ReadLine();
-        Console.Write("Välj lösenord: ");
-        var password = ReadPassword();
+        var username = Prompt("Välj användarnamn: ");
+        var password = Prompt("Välj lösenord: ", hideInput: true);
 
-        if (await _db.Users.AnyAsync(u => u.UserName == username))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Användarnamn och lösenord får inte vara tomma");
+            await Task.Delay(1000);
+            return;
+        }
+
+        if (await _db.Users.AnyAsync(u => u.Username == username))
         {
             Console.WriteLine("Användarnamnet finns redan");
             await Task.Delay(1000);
             return;
         }
 
+        var userRole = await GetRoleAsync("User");
+        if (userRole is null)
+        {
+            Console.WriteLine("Kunde inte hitta rollen User i databasen");
+            await Task.Delay(1000);
+            return;
+        }
+
         var user = new User
         {
-            UserName = username,
-            Password = Hash(password)
+            Username = username,
+            PasswordHash = Hash(password),
+            Authorities = new List<Authority> { userRole }
         };
 
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
 
-        var assignment = new Authority
-        {
-            UserId = user.Id,
-            Name = user.UserName!,
-            IsAdmin = false,
-            IsOwner = false,
-        };
-
-        _db.Authorities.Add(assignment);
-        await _db.SaveChangesAsync();
-
-        Console.WriteLine("Registering lyckades!\n");
+        Console.WriteLine("Registering lyckades!");
         await Task.Delay(1000);
 
     }
