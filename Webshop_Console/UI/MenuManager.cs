@@ -89,6 +89,7 @@ public class MenuManager
             Option("Visa produkter", ShowProducts),
             LogoutOption()
         };
+        Console.WriteLine("Test");
         return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
     }
 

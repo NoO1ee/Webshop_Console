@@ -246,7 +246,7 @@ internal class Menu
             Console.CursorVisible = false;
             Console.SetCursorPosition(0, startY + totalRow * (_boxHeight + 1) + 1);
             Console.ForegroundColor = _normalColor;
-            Console.WriteLine($"Use arrow keys to navigate | {Color.G("Enter")} to select | {Color.R("Esc")} to exit");
+            Console.WriteLine($"Använd pilarna för att navigera | {Color.G("Enter")} gå vidare | {Color.R("Esc")} för att lämna");
 
            
         }
