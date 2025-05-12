@@ -1,5 +1,6 @@
 ﻿using System.Threading.Channels;
 using Visual;
+using Webshop_Console.Models;
 using Webshop_Console.Services;
 using Webshop_Console.UI;
 
@@ -23,18 +24,19 @@ internal class Program
 
         //mainMenu.Display();
 
+        using var db = new MyDbContext();
+        var auth = new AuthService(db);
 
+        var menus = new MenuManager(auth, db);
+        await menus.ShowMainMenuAsync();
 
-        await Menu.ShowMenu("Duck4Hire", "Log in/Register", new (string, Action)[]
-        {
-            //("Log in", () => Login.RunLogin()),
-            ("Register", () => Console.WriteLine("Register test")),
-            ("Exit", () => Environment.Exit(0))
-        });
+        //await Menu.ShowMenu("Duck4Hire", "Log in/Register", new (string, Action)[]
+        //{
+        //    //("Log in", () => Login.RunLogin()),
+        //    ("Register", () => Console.WriteLine("Register test")),
+        //    ("Exit", () => Environment.Exit(0))
+        //});
 
     }
-
-    
-
 
 }

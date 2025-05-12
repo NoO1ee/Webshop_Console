@@ -9,7 +9,7 @@ using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
 
-internal class AuthService
+public class AuthService
 {
     readonly MyDbContext _db;
     public AuthService(MyDbContext db) => _db = db;
@@ -44,6 +44,7 @@ internal class AuthService
 
     public async Task<User?> LoginAsync()
     {
+        Console.Clear();
         Console.Write("Ange användarnamn: ");
         var username = Console.ReadLine();
 
@@ -53,11 +54,12 @@ internal class AuthService
         var hashed = Hash(password);
         var user = await _db.Users
             .Include(u => u.Authoriries)
-            .FirstOrDefaultAsync(u => u.UserName == username && u.Password == password);
+            .FirstOrDefaultAsync(u => u.UserName == username && u.Password == hashed);
 
-        if (user != null)
+        if (user == null)
         {
             Console.WriteLine("Felaktigt användarnamn eller lösenord");
+            await Task.Delay(1000);
             return null;
         }
 
@@ -67,6 +69,7 @@ internal class AuthService
 
     public async Task RegisterAsync()
     {
+        Console.Clear();
         Console.Write("Välj användarnamn: ");
         var username = Console.ReadLine();
         Console.Write("Välj lösenord: ");
@@ -75,6 +78,7 @@ internal class AuthService
         if (await _db.Users.AnyAsync(u => u.UserName == username))
         {
             Console.WriteLine("Användarnamnet finns redan");
+            await Task.Delay(1000);
             return;
         }
 
@@ -84,12 +88,22 @@ internal class AuthService
             Password = Hash(password)
         };
 
-        var defaultRole = await _db.Authorities.FirstOrDefaultAsync(a => a.Name == "User");
-        if (defaultRole != null)
-            user.Authoriries.Add(defaultRole);
-
         _db.Users.Add(user);
         await _db.SaveChangesAsync();
+
+        var assignment = new Authority
+        {
+            UserId = user.Id,
+            Name = user.UserName!,
+            IsAdmin = false,
+            IsOwner = false,
+        };
+
+        _db.Authorities.Add(assignment);
+        await _db.SaveChangesAsync();
+
         Console.WriteLine("Registering lyckades!\n");
+        await Task.Delay(1000);
+
     }
 }
