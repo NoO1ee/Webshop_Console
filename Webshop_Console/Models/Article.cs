@@ -14,6 +14,7 @@ public class Article
     public string ArticleCode { get; set; } = string.Empty;
     public int Storage { get; set; } = 0;
     public decimal Price { get; set; }
+    public bool IsFeatured { get; set; } = false;
 
     public int SuplierId { get; set; }
     public Supplier Suplier { get; set; } = null!;
