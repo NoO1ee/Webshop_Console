@@ -9,7 +9,11 @@ namespace Webshop_Console.Models;
 internal class Authoriry
 {
     public int Id { get; set; }
+    public string Name { get; set; }
     public bool IsAdmin { get; set; }
     public bool? IsOwner { get; set; } = false;
+
+    public int UserId { get; set; }
+    public User User { get; set; }
 
 }

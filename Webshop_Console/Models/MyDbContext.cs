@@ -10,7 +10,7 @@ namespace Webshop_Console.Models;
 internal class MyDbContext : DbContext
 {
     public DbSet<Article> Articles { get; set; }
-    public DbSet<Authoriry> Authoriries { get; set; }
+    public DbSet<Authoriry> Authorities { get; set; }
     public DbSet<Discount> Discounts { get; set; }
     public DbSet<Order> Orders { get; set; }
     public DbSet<OrderItem> OrderItems { get; set; }
