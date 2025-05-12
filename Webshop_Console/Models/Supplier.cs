@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Webshop_Console.Models;
 
-internal class Supplier
+public class Supplier
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;

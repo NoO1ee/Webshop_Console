@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Webshop_Console.Models;
 
-internal class Article
+public class Article
 {
     public int ID { get; set; }
     public string Name { get; set; }
