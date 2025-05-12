@@ -30,5 +30,11 @@ public class MyDbContext : DbContext
             .HasOne(o => o.Payment)
             .WithOne(o => o.Order)
             .HasForeignKey<Payment>(p => p.OrderId);
+
+        modelBuilder.Entity<Authority>().HasData(
+            new Authority { Id = 1, Name = "User", IsAdmin = false, IsOwner = false },
+            new Authority { Id = 2, Name = "Admin", IsAdmin = true, IsOwner = false },
+            new Authority { Id = 3, Name = "Owner", IsAdmin = true, IsOwner = true }
+        );
     }
 }

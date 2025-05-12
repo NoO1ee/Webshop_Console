@@ -79,7 +79,8 @@ public class AuthService
 
     private async Task<Authority?> GetRoleAsync(string roleName)
     {
-        return await _db.Authorities.FirstOrDefaultAsync(a => a.Name!.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+        var norm = roleName.ToLower();
+        return await _db.Authorities.FirstOrDefaultAsync(a => a.Name.ToLower() == norm);
     }
 
     public async Task RegisterAsync()

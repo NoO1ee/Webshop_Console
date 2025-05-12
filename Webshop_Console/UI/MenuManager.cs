@@ -1,5 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Channels;
@@ -70,14 +72,14 @@ public class MenuManager
 
     Task ShowOwnerMenuAsync(User owner)
     {
-        var options = new List<(string, Action)>
+        var options = new []
         {
             Option("Se statistik", ShowStatistics),
-            Option("Hantera användares roller", ManageUserRoles),
+            Option("Hantera användares roller", ManageUserRolesAsync),
             LogoutOption()
         };
 
-        return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options.ToArray());
+        return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options);
     }
 
     Task ShowUserMenuAsync()
@@ -95,13 +97,110 @@ public class MenuManager
     void ShowStatistics() => Console.WriteLine("Implementera...");
     void ShowProducts() => Console.WriteLine("Implementera...");
 
-    void ManageUserRoles()
+
+    async Task<List<User>> ListUsersAsync()
     {
-        //Lista alla användare
-        //Låt ägare välja användare
-        //Hämta användare (Authorities)
-        //Visa roller. lägga til eller ta bort.
-        Console.WriteLine("Implementera...");
+        var all = await _db.Users
+            .OrderBy(u =>  u.Id).ToListAsync();
+
+        Console.WriteLine("Tillgängliga användare:");
+        foreach(var u in all)
+            Console.WriteLine($"{u.Id}: {u.Username}");
+        Console.WriteLine();
+
+        return all;
     }
 
+    async Task<User?> SelectUserAsync(List<User> users)
+    {
+        Console.Write("Ange ID på användare att redigera (eller tomt för att avbryta): ");
+        var line = Console.ReadLine()?.Trim();
+        if (!int.TryParse(line, out var id))
+            return null;
+
+        var user = await _db.Users
+            .Include(u => u.Authorities).FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user == null)
+        {
+            Console.WriteLine("Felaktigt ID");
+            await Task.Delay(1000);
+        }
+        return user;
+    }
+
+    async Task EditRoleAsync(User user)
+    {
+        while (true)
+        {
+            Console.Clear();
+            Console.WriteLine($"Redigerar roller för {user.Username}");
+            Console.WriteLine();
+
+            var allRoles = await _db.Authorities.ToListAsync();
+
+            Console.WriteLine("Nuvarande roller:");
+            foreach (var r in user.Authorities)
+            {
+                Console.WriteLine($" [X] {r.Name}");
+            }
+            Console.WriteLine();
+
+            Console.WriteLine("Tillgängliga roller:");
+            foreach(var r in allRoles.Except(user.Authorities, new AuthorityComparer()))
+                Console.WriteLine($" [ ] {r.Name}");
+            Console.WriteLine();
+
+            Console.Write("Skriv '+RoleName' för att lägga till, '-RoleName' för att tta bort, eller tomt för klar: ");
+            var cmd = Console.ReadLine()?.Trim();
+            if (string.IsNullOrEmpty(cmd))
+                break;
+
+            var action = cmd[0];
+            var roleName = cmd.Substring(1);
+
+            var role = allRoles.FirstOrDefault(a => a.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+
+            if (role == null)
+            {
+                Console.WriteLine("Hittade ingen sådan roll.");
+                await Task.Delay(1000);
+                continue;
+            }
+
+            if(action == '+' && !user.Authorities.Contains(role))
+                user.Authorities.Add(role);
+            else if(action == '-' && user.Authorities.Contains(role))
+                user.Authorities.Remove(role);
+
+            await _db.SaveChangesAsync();
+        }
+    }
+
+    async Task ManageUserRolesAsync()
+    {
+        Console.Clear();
+        var users = await ListUsersAsync();
+        if (users.Count == 0)
+        {
+            Console.WriteLine("Inga användare hittades");
+            await Task.Delay(1000);
+            return;
+        }
+
+        var user = await SelectUserAsync(users);
+        if (user == null) return;
+
+        await EditRoleAsync(user);
+        Console.WriteLine("Uppdatering klar!");
+        await Task.Delay(1000);
+    }
+
+}
+class AuthorityComparer : IEqualityComparer<Authority>
+{
+    public bool Equals(Authority? x, Authority? y) =>
+        x != null && y != null && x.Id == y.Id;
+
+    public int GetHashCode(Authority obj) => obj.Id;
 }
