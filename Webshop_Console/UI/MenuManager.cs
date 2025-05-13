@@ -15,13 +15,15 @@ public class MenuManager
 {
     readonly AuthService _auth;
     readonly MyDbContext _db;
+    readonly ProductService _productService;
 
     User? _currentUser;
 
-    public MenuManager(AuthService auth, MyDbContext db)
+    public MenuManager(AuthService auth, MyDbContext db, ProductService productService)
     {
         _auth = auth;
         _db = db;
+        _productService = productService;
     }
 
 
@@ -73,6 +75,7 @@ public class MenuManager
         var options = new[]
         {
             Option("Se ordrar", ShowOrders),
+            Option("Artiklar", ShowProductManagementMenuAsync),
             LogoutOption()
         };
         return Menu.ShowMenu("Adminpanel", "Adminpanel", options);
@@ -101,6 +104,19 @@ public class MenuManager
         return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
     }
 
+    Task ShowProductManagementMenuAsync()
+    {
+        var options = new[]
+        {
+            Option("Lista produkter", ListProductsAsync),
+            Option("Lägg till produkt", CreateProductAsync),
+            Option("Uppdatera produkt", UpdateProductAsync),
+            Option("Ta bort produkt", DeleteProductAsync),
+            LogoutOption()
+        };
+        return Menu.ShowMenu("Produktadministration", "Produkt hantering", options);
+    }
+
     #endregion
 
     // Ta bort senare när jag har implementerat...
@@ -108,41 +124,41 @@ public class MenuManager
     void ShowStatistics() => Console.WriteLine("Implementera...");
     void ShowProducts() => Console.WriteLine("Implementera...");
 
-    void AddToCart(Article product)
-    {
-        if (_currentUser == null)
-            throw new InvalidOperationException("Ingen användare inloggad.");
+    //void AddToCart(Article product)
+    //{
+    //    if (_currentUser == null)
+    //        throw new InvalidOperationException("Ingen användare inloggad.");
 
-        var order = _db.Orders.Include(o => o.Items).FirstOrDefault(o => o.UserId == _currentUser.Id && o.Payment == null);
+    //    var order = _db.Orders.Include(o => o.Items).FirstOrDefault(o => o.UserId == _currentUser.Id && o.Payment == null);
 
-        if (order == null)
-        {
-            order = new Order
-            {
-                UserId = _currentUser.Id,
-                OrderDate = DateTime.Now,
-                Items = new List<OrderItem>()
-            };
-            _db.Orders.Add(order);
-        }
+    //    if (order == null)
+    //    {
+    //        order = new Order
+    //        {
+    //            UserId = _currentUser.Id,
+    //            OrderDate = DateTime.Now,
+    //            Items = new List<OrderItem>()
+    //        };
+    //        _db.Orders.Add(order);
+    //    }
 
-        var existting = order.Items.FirstOrDefault(i => i.ArticleId == product.Id);
-        if (existting != null)
-        {
-            existting.Quantity++;
-        }
-        else
-        {
-            order.Items.Add(new OrderItem
-            {
-                ArticleId = product.Id,
-                Quantity = 1,
-                UnitPrice = product.Price,
-            });
-        }
+    //    var existting = order.Items.FirstOrDefault(i => i.ArticleId == product.Id);
+    //    if (existting != null)
+    //    {
+    //        existting.Quantity++;
+    //    }
+    //    else
+    //    {
+    //        order.Items.Add(new OrderItem
+    //        {
+    //            ArticleId = product.Id,
+    //            Quantity = 1,
+    //            UnitPrice = product.Price,
+    //        });
+    //    }
 
-        _db.SaveChanges();
-    }
+    //    _db.SaveChanges();
+    //}
 
     #region Admin funktioner
     async Task<List<User>> ListUsersAsync()
@@ -245,7 +261,121 @@ public class MenuManager
 
     #endregion
 
-  
+    #region Produkt Funktioner
+
+    async Task ListProductsAsync()
+    {
+        var products = await _productService.GetAllAsync();
+        Console.Clear();
+        Console.WriteLine("ID | Namn | Pris | Leverantör | Enhet");
+        Console.WriteLine(new string('-', 70));
+        foreach (var p in products)
+        {
+            Console.WriteLine($"{p.Id,-2} | {p.Name,-20} | {p.Price,6} | {p.Supplier?.Name,-18} | {p.Unit?.Name}");
+        }
+        Console.WriteLine();
+        Console.WriteLine("Tryck valfri tangent för att återgå");
+        Console.ReadKey(true);
+        await ShowProductManagementMenuAsync();
+    }
+
+    async Task CreateProductAsync()
+    {
+        Console.Clear();
+        Console.Write("Namn: ");
+        var name = Console.ReadLine()?.Trim();
+        Console.Write("Beskrivning: ");
+        var bio = Console.ReadLine()?.Trim();
+        Console.Write("Pris: ");
+        var price = decimal.Parse(Console.ReadLine()!);
+        Console.Write("Leverantörs-ID: ");
+        var supId = int.Parse(Console.ReadLine()!);
+        Console.Write("Enhets-ID: ");
+        var unitId = int.Parse(Console.ReadLine()!);
+
+        var article = new Article
+        {
+            Name = name!,
+            Bio = bio!,
+            Price = price,
+            SupplierId = supId,
+            UnitId = unitId
+        };
+
+        await _productService.AddAsync(article);
+        Console.WriteLine("Produkten skapad!");
+        Thread.Sleep(1000);
+        await ShowProductManagementMenuAsync();
+    }
+
+    async Task UpdateProductAsync()
+    {
+        Console.Clear();
+        Console.Write("Ange ID på produkt för att uppdatera: ");
+        if (!int.TryParse(Console.ReadLine(), out var id))
+        {
+            Console.WriteLine("Ogiltligt ID");
+            Thread.Sleep(1000);
+            await ShowProductManagementMenuAsync();
+        }
+
+        var existing = await _productService.GetByIdAsync(id);
+        if (existing == null)
+        {
+            Console.WriteLine("Produkten hittades inte");
+            Thread.Sleep(1000);
+            await ShowProductManagementMenuAsync();
+        }
+
+        Console.Write($"Nytt namn [{existing.Name}]: ");
+        var name = Console.ReadLine()?.Trim();
+        Console.Write($"Ny beskrivning [{existing.Bio}]: ");
+        var bio = Console.ReadLine()?.Trim();
+        Console.Write($"Nytt pris [{existing.Price}]: ");
+        var priceText = Console.ReadLine();
+        Console.Write($"Ny leverantörs-ID [{existing.SupplierId}]: ");
+        var supText = Console.ReadLine();
+        Console.Write($"Ny enhets-ID [{existing.UnitId}]: ");
+        var unitText = Console.ReadLine();
+
+        if(!string.IsNullOrWhiteSpace(name))
+            existing.Name = name;
+        if(!string.IsNullOrWhiteSpace(bio))
+            existing.Bio = bio;
+        if(decimal.TryParse(priceText, out var price))
+            existing.Price = price;
+        if (int.TryParse(supText, out var sup))
+            existing.SupplierId = sup;
+        if(int.TryParse(unitText, out var unit))
+            existing.UnitId = unit;
+
+        var ok = await _productService.UpdateAsync(existing);
+        Console.WriteLine(ok ? "Produkt uppdaterad!" : "Uppdateringen misslyckades");
+        Thread.Sleep(1000);
+        await ShowProductManagementMenuAsync();
+
+    }
+
+    async Task DeleteProductAsync()
+    {
+        Console.Clear();
+        Console.Write("Ange ID på produkt att ta bort: ");
+        if (!int.TryParse(Console.ReadLine(), out var id))
+        {
+            Console.WriteLine("Ogiltligt ID");
+            Thread.Sleep(1000);
+            await ShowProductManagementMenuAsync();
+        }
+
+        var ok = await _productService.DeleteAsync(id);
+        Console.WriteLine(ok ? "Produkten borttagen!" : "Bortttagning misslyckades");
+        Thread.Sleep(1000);
+        await ShowProductManagementMenuAsync();
+    }
+
+    #endregion
+
+
 }
 class AuthorityComparer : IEqualityComparer<Authority>
 {

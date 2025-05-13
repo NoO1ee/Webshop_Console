@@ -2,6 +2,7 @@
 using Webshop_Console.Services;
 using Webshop_Console.UI;
 using System.Text;
+using System.Linq.Expressions;
 
 namespace Webshop_Console;
 
@@ -14,7 +15,8 @@ internal class Program
 
         using var db = new MyDbContext();
         var auth = new AuthService(db);
-        var menus = new MenuManager(auth, db);
+        var prod = new ProductService(db);
+        var menus = new MenuManager(auth, db, prod);
         await menus.ShowMainMenuAsync();
     }
 

@@ -36,5 +36,15 @@ public class MyDbContext : DbContext
             new Authority { Id = 2, Name = "Admin", IsAdmin = true, IsOwner = false },
             new Authority { Id = 3, Name = "Owner", IsAdmin = true, IsOwner = true }
         );
+
+        modelBuilder.Entity<Supplier>().HasData(
+            new Supplier { Id = 1, Name = "SpyVer"},
+            new Supplier { Id = 2, Name = "Assultis"}
+        );
+
+        modelBuilder.Entity<Unit>().HasData(
+            new Unit { Id = 1, Name = "Styck", Symbol = "St"},
+            new Unit { Id = 2, Name = "Kilo", Symbol = "Kg"}
+        );
     }
 }
