@@ -16,22 +16,15 @@ public class MenuManager
     readonly AuthService _auth;
     readonly MyDbContext _db;
 
+    User? _currentUser;
+
     public MenuManager(AuthService auth, MyDbContext db)
     {
         _auth = auth;
         _db = db;
     }
 
-    public async Task ShowMainMenuAsync()
-    {
-        var options = new[]
-        {
-            Option("Log in", HandleLoginAsync),
-            Option("Register", _auth.RegisterAsync),
-            Option("Exit", () => Environment.Exit(0))
-        };
-        await Menu.ShowMenu("Duck4Hire", "Log in / Register", options);
-    }
+
 
     // Kör asynkrona actions i en sync action
     void RunAsync(Func<Task> func) => Task.Run(func).Wait();
@@ -45,9 +38,9 @@ public class MenuManager
 
     async Task HandleLoginAsync()
     {
-        var user = await _auth.LoginAsync();
-        if (user != null)
-            await RouteByRoleAsync(user);
+        _currentUser = await _auth.LoginAsync();
+        if (_currentUser != null)
+            await RouteByRoleAsync(_currentUser);
     }
 
     async Task RouteByRoleAsync(User user)
@@ -59,6 +52,21 @@ public class MenuManager
         else
             await ShowUserMenuAsync();
     }
+
+    #region Menyer
+
+    //Huvud meny
+    public async Task ShowMainMenuAsync()
+    {
+        var options = new[]
+        {
+            Option("Log in", HandleLoginAsync),
+            Option("Register", _auth.RegisterAsync),
+            Option("Exit", () => Environment.Exit(0))
+        };
+        await Menu.ShowMenu("Duck4Hire", "Log in / Register", options: options, titleColor: ConsoleColor.Yellow, textColor: ConsoleColor.White, selectedColor: ConsoleColor.Green, minBoxWidth: 30, boxHeight: 3);
+    }
+
 
     Task ShowAdminMenuAsync()
     {
@@ -93,12 +101,50 @@ public class MenuManager
         return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
     }
 
+    #endregion
+
     // Ta bort senare när jag har implementerat...
     void ShowOrders() => Console.WriteLine("Implementera...");
     void ShowStatistics() => Console.WriteLine("Implementera...");
     void ShowProducts() => Console.WriteLine("Implementera...");
 
+    void AddToCart(Article product)
+    {
+        if (_currentUser == null)
+            throw new InvalidOperationException("Ingen användare inloggad.");
 
+        var order = _db.Orders.Include(o => o.Items).FirstOrDefault(o => o.UserId == _currentUser.Id && o.Payment == null);
+
+        if (order == null)
+        {
+            order = new Order
+            {
+                UserId = _currentUser.Id,
+                OrderDate = DateTime.Now,
+                Items = new List<OrderItem>()
+            };
+            _db.Orders.Add(order);
+        }
+
+        var existting = order.Items.FirstOrDefault(i => i.ArticleId == product.Id);
+        if (existting != null)
+        {
+            existting.Quantity++;
+        }
+        else
+        {
+            order.Items.Add(new OrderItem
+            {
+                ArticleId = product.Id,
+                Quantity = 1,
+                UnitPrice = product.Price,
+            });
+        }
+
+        _db.SaveChanges();
+    }
+
+    #region Admin funktioner
     async Task<List<User>> ListUsersAsync()
     {
         var all = await _db.Users
@@ -152,7 +198,7 @@ public class MenuManager
                 Console.WriteLine($" [ ] {r.Name}");
             Console.WriteLine();
 
-            Console.Write("Skriv '+RoleName' för att lägga till, '-RoleName' för att tta bort, eller tomt för klar: ");
+            Console.Write("Skriv '+Rollnamn' tex '+Admin' för att lägga till, '-Rollnamn' tex '-Admin' för att ta bort, eller tomt för klar: ");
             var cmd = Console.ReadLine()?.Trim();
             if (string.IsNullOrEmpty(cmd))
                 break;
@@ -197,6 +243,9 @@ public class MenuManager
         await Task.Delay(1000);
     }
 
+    #endregion
+
+  
 }
 class AuthorityComparer : IEqualityComparer<Authority>
 {
@@ -205,3 +254,5 @@ class AuthorityComparer : IEqualityComparer<Authority>
 
     public int GetHashCode(Authority obj) => obj.Id;
 }
+
+
