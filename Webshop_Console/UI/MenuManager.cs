@@ -299,7 +299,8 @@ public class MenuManager
             Bio = bio!,
             Price = price,
             SupplierId = supId,
-            UnitId = unitId
+            UnitId = unitId,
+            DiscountId = 1
         };
 
         await _productService.AddAsync(article);

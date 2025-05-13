@@ -6,6 +6,6 @@ namespace Webshop_Console.Models;
 public class Discount : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
-    public double Percentage { get; set; } = 0.0;
+    public decimal Percentage { get; set; }
     public ICollection<Article> Articles { get; set; } = new List<Article>();
 }

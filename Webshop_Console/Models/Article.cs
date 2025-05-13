@@ -16,7 +16,7 @@ public class Article : BaseEntity
     public int UnitId { get; set; }
     public Unit Unit { get; set; } = null!;
 
-    public int DiscountId { get; set; }
-    public Discount Discount { get; set; } = null!;
+    public int? DiscountId { get; set; }
+    public Discount? Discount { get; set; } = null!;
 
 }

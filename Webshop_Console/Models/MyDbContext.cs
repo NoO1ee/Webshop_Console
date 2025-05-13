@@ -26,6 +26,18 @@ public class MyDbContext : DbContext
             .HasForeignKey(a => a.SupplierId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Article>()
+            .HasOne(a => a.Unit)
+            .WithMany(u => u.Articles)
+            .HasForeignKey(a => a.UnitId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<Article>()
+            .HasOne(a => a.Discount)
+            .WithMany(d => d.Articles)
+            .HasForeignKey(a => a.DiscountId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<Order>()
             .HasOne(o => o.Payment)
             .WithOne(o => o.Order)
@@ -45,6 +57,12 @@ public class MyDbContext : DbContext
         modelBuilder.Entity<Unit>().HasData(
             new Unit { Id = 1, Name = "Styck", Symbol = "St"},
             new Unit { Id = 2, Name = "Kilo", Symbol = "Kg"}
+        );
+
+        modelBuilder.Entity<Discount>().HasData(
+            new Discount { Id = 1, Name = "Ingen rabatt", Percentage = 0},
+            new Discount { Id = 2, Name = "Silver medlem", Percentage = 20},
+            new Discount { Id = 3, Name = "Guld medlem", Percentage = 50}
         );
     }
 }
