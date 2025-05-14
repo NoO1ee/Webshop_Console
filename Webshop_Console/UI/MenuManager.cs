@@ -112,7 +112,7 @@ public class MenuManager
             Option("Lägg till produkt", CreateProductAsync),
             Option("Uppdatera produkt", UpdateProductAsync),
             Option("Ta bort produkt", DeleteProductAsync),
-            LogoutOption()
+            Option("Tillbaka", ShowAdminMenuAsync)
         };
         return Menu.ShowMenu("Produktadministration", "Produkt hantering", options);
     }
@@ -267,11 +267,15 @@ public class MenuManager
     {
         var products = await _productService.GetAllAsync();
         Console.Clear();
-        Console.WriteLine("ID | Namn | Pris | Leverantör | Enhet");
-        Console.WriteLine(new string('-', 70));
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine($"ID │ Namn {new string(' ', 16)}│ Pris {new string(' ', 6)}│ Leverantör {new string(' ', 8)}│ Enhet");
+        Console.WriteLine(new string('⎯', 70));
+        Console.ResetColor();
         foreach (var p in products)
         {
-            Console.WriteLine($"{p.Id,-2} | {p.Name,-20} | {p.Price,6} | {p.Supplier?.Name,-18} | {p.Unit?.Name}");
+            Console.WriteLine(new string('⎯', 70));
+            Console.WriteLine($"{p.Id,-2} │ {p.Name,-20} │ {p.Price,-10} │ {p.Supplier?.Name,-18} │ {p.Unit?.Name}");
+            Console.WriteLine(new string('⎯', 70));
         }
         Console.WriteLine();
         Console.WriteLine("Tryck valfri tangent för att återgå");
@@ -284,6 +288,14 @@ public class MenuManager
         Console.Clear();
         Console.Write("Namn: ");
         var name = Console.ReadLine()?.Trim();
+        Console.Write("EAN kod: ");
+        var eanCode = Console.ReadLine()?.Trim();
+        Console.Write("Artikel nummer: ");
+        var artNumber = Console.ReadLine()?.Trim();
+        Console.Write("Kategori: ");
+        var category = Console.ReadLine()?.Trim();
+        Console.Write("Antal: ");
+        var totalStorage = int.Parse(Console.ReadLine()!);
         Console.Write("Beskrivning: ");
         var bio = Console.ReadLine()?.Trim();
         Console.Write("Pris: ");
@@ -296,6 +308,10 @@ public class MenuManager
         var article = new Article
         {
             Name = name!,
+            EanCode = eanCode!,
+            ArticleCode = artNumber!,
+            Category = category!,
+            Storage = totalStorage,
             Bio = bio!,
             Price = price,
             SupplierId = supId,
@@ -368,10 +384,23 @@ public class MenuManager
             await ShowProductManagementMenuAsync();
         }
 
-        var ok = await _productService.DeleteAsync(id);
-        Console.WriteLine(ok ? "Produkten borttagen!" : "Bortttagning misslyckades");
-        Thread.Sleep(1000);
-        await ShowProductManagementMenuAsync();
+        Console.Write("Är du säker? ENTER för ja | ESC för nej: ");
+        ConsoleKeyInfo key = Console.ReadKey(true);
+
+        switch (key.Key)
+        {
+            case ConsoleKey.Enter:
+                var ok = await _productService.DeleteAsync(id);
+                Console.WriteLine(ok ? "Produkten borttagen!" : "Bortttagning misslyckades");
+                Thread.Sleep(1000);
+                await ShowProductManagementMenuAsync();
+                break;
+            case ConsoleKey.Escape:
+                await ShowProductManagementMenuAsync();
+                break;
+        }
+
+        
     }
 
     #endregion

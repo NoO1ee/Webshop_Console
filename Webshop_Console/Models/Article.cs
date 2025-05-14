@@ -5,6 +5,7 @@ public class Article : BaseEntity
     public string? Name { get; set; }
     public string EanCode { get; set; } = string.Empty;
     public string ArticleCode { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
     public int Storage { get; set; } = 0;
     public string? Bio { get; set; }
     public decimal Price { get; set; }

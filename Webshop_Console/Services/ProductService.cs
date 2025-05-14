@@ -15,12 +15,12 @@ public class ProductService
 
     public async Task<List<Article>> GetAllAsync()
     {
-        return await _db.Articles.Include(a => a.SupplierId).Include(a => a.Unit).ToListAsync();
+        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).ToListAsync();
     }
 
     public async Task<Article?> GetByIdAsync(int id)
     {
-        return await _db.Articles.Include(a => a.SupplierId).Include(a => a.Unit).FirstOrDefaultAsync(a => a.Id == id);
+        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).FirstOrDefaultAsync(a => a.Id == id);
 
     }
 
