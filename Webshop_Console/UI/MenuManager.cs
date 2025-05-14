@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -16,6 +17,7 @@ public class MenuManager
     readonly AuthService _auth;
     readonly MyDbContext _db;
     readonly ProductService _productService;
+    readonly List<Article> _cart = new List<Article>();
 
     User? _currentUser;
 
@@ -86,6 +88,7 @@ public class MenuManager
         var options = new []
         {
             Option("Se statistik", ShowStatistics),
+            Option("Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
             LogoutOption()
         };
@@ -97,7 +100,7 @@ public class MenuManager
     {
         var options = new[]
         {
-            Option("Visa produkter", ShowProducts),
+            Option("Visa produkter", ShowProductsAsync),
             LogoutOption()
         };
         Console.WriteLine("Test");
@@ -122,43 +125,7 @@ public class MenuManager
     // Ta bort senare när jag har implementerat...
     void ShowOrders() => Console.WriteLine("Implementera...");
     void ShowStatistics() => Console.WriteLine("Implementera...");
-    void ShowProducts() => Console.WriteLine("Implementera...");
 
-    //void AddToCart(Article product)
-    //{
-    //    if (_currentUser == null)
-    //        throw new InvalidOperationException("Ingen användare inloggad.");
-
-    //    var order = _db.Orders.Include(o => o.Items).FirstOrDefault(o => o.UserId == _currentUser.Id && o.Payment == null);
-
-    //    if (order == null)
-    //    {
-    //        order = new Order
-    //        {
-    //            UserId = _currentUser.Id,
-    //            OrderDate = DateTime.Now,
-    //            Items = new List<OrderItem>()
-    //        };
-    //        _db.Orders.Add(order);
-    //    }
-
-    //    var existting = order.Items.FirstOrDefault(i => i.ArticleId == product.Id);
-    //    if (existting != null)
-    //    {
-    //        existting.Quantity++;
-    //    }
-    //    else
-    //    {
-    //        order.Items.Add(new OrderItem
-    //        {
-    //            ArticleId = product.Id,
-    //            Quantity = 1,
-    //            UnitPrice = product.Price,
-    //        });
-    //    }
-
-    //    _db.SaveChanges();
-    //}
 
     #region Admin funktioner
     async Task<List<User>> ListUsersAsync()
@@ -405,7 +372,89 @@ public class MenuManager
 
     #endregion
 
+    #region Produkt Funktioner för användare
 
+    Task ShowProductsAsync() => ShowProductsFilterMenuAsync();
+
+    Task ShowProductsFilterMenuAsync()
+    {
+        var options = new[]
+        {
+            Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)),
+            Option("Stora", () => ListAndSelectProductsAsync("Stora")),
+            Option("Medium", () => ListAndSelectProductsAsync("Medium")),
+            Option("Små", () => ListAndSelectProductsAsync("Små")),
+            Option("Tillbaka", ShowUserMenuAsync)
+        };
+        return Menu.ShowMenu("Produktmeny", "Välj kategori", options);
+    }
+
+    async Task ListAndSelectProductsAsync(string? category)
+    {
+        Console.Clear();
+        List<Article> products;
+        
+        if(string.IsNullOrEmpty(category))
+            products = await _productService.GetAllAsync();
+        else
+            products = await _productService.GetByCategoryAsync(category);
+
+        Console.WriteLine(category == null ? "Alla produkter:" : $"Produkter - katergori: {category}");
+        Console.WriteLine(new string('-', 40));
+
+        foreach (var product in products)
+        {
+            Console.WriteLine($"{product.Id}: {product.Name} - {product.Price} kr");
+        }
+        Console.WriteLine();
+
+        Console.Write("Ange produkt ID för detaljer (tomt för tillbaka): ");
+        var txt = Console.ReadLine()?.Trim();
+        if (int.TryParse(txt, out var id))
+        {
+            var prod = products.FirstOrDefault(x => x.Id == id);
+            if (prod != null)
+            {
+                await ShowProductsDetailsAsync(prod);
+            }
+        }
+
+        await ShowProductsFilterMenuAsync();
+
+    }
+
+    Task ShowProductsDetailsAsync(Article product)
+    {
+        var desc = new StringBuilder()
+            .AppendLine($"Produkt: {product.Name}")
+            .AppendLine($"Pris: {product.Price} kr")
+            .AppendLine("Beskrivning:")
+            .AppendLine(product.Bio)
+            .AppendLine("Tryck ENTER för att lägga i kundvagnen.")
+            .ToString().TrimEnd('\n');
+
+        var lines = desc.Split('\n');
+        int longest = lines.Max(i => i.Length);
+        int minWidth = Math.Max(longest + 4, 40);
+        int boxHeight = lines.Length + 5;
+
+        var options = new[]
+        {
+            Option(desc, () => AddToCartAsync(product)),
+            Option("Tillbaka till lista", ShowProductsFilterMenuAsync)
+        };
+        return Menu.ShowMenu("Produktdetaljer", "Produktinformation", options, minBoxWidth: minWidth, boxHeight: boxHeight);
+    }
+
+    async Task AddToCartAsync(Article product)
+    {
+        _cart.Add(product);
+        Console.WriteLine($"\n{product.Name} har lagts till i kundvagnen");
+        await Task.Delay(1000);
+        await ListAndSelectProductsAsync(null);
+    }
+
+    #endregion
 }
 class AuthorityComparer : IEqualityComparer<Authority>
 {

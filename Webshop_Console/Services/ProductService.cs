@@ -18,6 +18,11 @@ public class ProductService
         return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).ToListAsync();
     }
 
+    public async Task<List<Article>> GetByCategoryAsync(string category)
+    {
+        return await _db.Articles.Include(a => a.Category).Include(a => a.Unit).Where(a => a.Category.ToLower() == category.ToLower()).ToListAsync();
+    }
+
     public async Task<Article?> GetByIdAsync(int id)
     {
         return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).FirstOrDefaultAsync(a => a.Id == id);
