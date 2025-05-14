@@ -17,6 +17,7 @@ public class MenuManager
     readonly AuthService _auth;
     readonly MyDbContext _db;
     readonly ProductService _productService;
+    readonly CartService _cartService;
     readonly List<Article> _cart = new List<Article>();
 
     User? _currentUser;
@@ -26,6 +27,7 @@ public class MenuManager
         _auth = auth;
         _db = db;
         _productService = productService;
+        _cartService = new CartService(db);
     }
 
 
@@ -101,6 +103,7 @@ public class MenuManager
         var options = new[]
         {
             Option("Visa produkter", ShowProductsAsync),
+            Option("Visa kundvagn", ShowCartAsync),
             LogoutOption()
         };
         Console.WriteLine("Test");
@@ -235,14 +238,14 @@ public class MenuManager
         var products = await _productService.GetAllAsync();
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"ID │ Namn {new string(' ', 16)}│ Pris {new string(' ', 6)}│ Leverantör {new string(' ', 8)}│ Enhet");
-        Console.WriteLine(new string('⎯', 70));
+        Console.WriteLine($"ID │ Namn {new string(' ', 16)}│ Pris {new string(' ', 6)}│ Leverantör {new string(' ', 8)}│ Enhet {new string(' ', 5)}│ Lagersaldo");
+        Console.WriteLine(new string('⎯', 90));
         Console.ResetColor();
         foreach (var p in products)
         {
-            Console.WriteLine(new string('⎯', 70));
-            Console.WriteLine($"{p.Id,-2} │ {p.Name,-20} │ {p.Price,-10} │ {p.Supplier?.Name,-18} │ {p.Unit?.Name}");
-            Console.WriteLine(new string('⎯', 70));
+            Console.WriteLine(new string('⎯', 90));
+            Console.WriteLine($"{p.Id,-2} │ {p.Name,-20} │ {p.Price,-10} │ {p.Supplier?.Name,-18} │ {p.Unit?.Name,-10} │ {p.Storage}");
+            Console.WriteLine(new string('⎯', 90));
         }
         Console.WriteLine();
         Console.WriteLine("Tryck valfri tangent för att återgå");
@@ -440,18 +443,53 @@ public class MenuManager
 
         var options = new[]
         {
-            Option(desc, () => AddToCartAsync(product)),
+            Option(desc, () => _cartService.AddToCart(product)),
             Option("Tillbaka till lista", ShowProductsFilterMenuAsync)
         };
         return Menu.ShowMenu("Produktdetaljer", "Produktinformation", options, minBoxWidth: minWidth, boxHeight: boxHeight);
     }
 
-    async Task AddToCartAsync(Article product)
+    async Task ShowCartAsync()
     {
-        _cart.Add(product);
-        Console.WriteLine($"\n{product.Name} har lagts till i kundvagnen");
-        await Task.Delay(1000);
-        await ListAndSelectProductsAsync(null);
+        Console.Clear();
+        var items = _cartService.GetItems();
+
+        if (!items.Any())
+        {
+            Console.WriteLine("Din kundvagn är tom");
+            await Task.Delay(1000);
+            await ShowUserMenuAsync();
+            return;
+        }
+
+        Console.WriteLine("Din kundvang:");
+        Console.WriteLine(new string('-', 40));
+
+        foreach (var item in items)
+        {
+            var lineTotal = item.Article.Price * item.Quantity;
+            Console.WriteLine($"{item.Article.Name,-20} x{item.Quantity,2} = {lineTotal,6} kr");
+        }
+        Console.WriteLine(new string('-', 40));
+        var total = items.Sum(i => i.Article.Price * i.Quantity);
+        Console.WriteLine($"Totalt: {total} kr");
+        Console.WriteLine();
+
+        var options = new[]
+        {
+            Option("Betala", async () =>
+            {
+                if(_currentUser == null)
+                    return;
+                var ok = await _cartService.CheckoutAsync(_currentUser);
+                Console.WriteLine(ok ? "Betalning genomförd och order skapad!" : "Betalning misslyckades");
+                await Task.Delay(1000);
+                await ShowUserMenuAsync();
+            }),
+            Option("Tillbaka", ShowUserMenuAsync)
+        };
+
+        await Menu.ShowMenu("Kundvagn", "Kundvagn", options);
     }
 
     #endregion
