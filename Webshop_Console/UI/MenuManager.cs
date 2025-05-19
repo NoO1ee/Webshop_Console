@@ -18,6 +18,7 @@ public class MenuManager
     readonly MyDbContext _db;
     readonly ProductService _productService;
     readonly CartService _cartService;
+    readonly PaymentService _paymentService;
     readonly List<Article> _cart = new List<Article>();
 
     User? _currentUser;
@@ -28,6 +29,7 @@ public class MenuManager
         _db = db;
         _productService = productService;
         _cartService = new CartService(db);
+        _paymentService = new PaymentService(db);
     }
 
 
@@ -482,9 +484,17 @@ public class MenuManager
                 if(_currentUser == null)
                     return;
                 var ok = await _cartService.CheckoutAsync(_currentUser);
-                Console.WriteLine(ok ? "Betalning genomförd och order skapad!" : "Betalning misslyckades");
-                await Task.Delay(1000);
-                await ShowUserMenuAsync();
+                //Console.WriteLine(ok == null ? "Betalning genomförd och order skapad!" : "Betalning misslyckades");
+
+                if(ok == null)
+                {
+                    Console.WriteLine("Betalningen misslyckades");
+                    await Task.Delay(1000);
+                    await ShowUserMenuAsync();
+                    return;
+                }
+
+                await ShowPaymentMethodMenuAsync(ok!);
             }),
             Option("Tillbaka", ShowUserMenuAsync)
         };
@@ -492,7 +502,38 @@ public class MenuManager
         await Menu.ShowMenu("Kundvagn", "Kundvagn", options);
     }
 
+
+
     #endregion
+
+    async Task ShowPaymentMethodMenuAsync(Order order)
+    {
+        Console.Clear();
+        var methods = await _paymentService.GetAllMethodsAsync();
+
+        Console.WriteLine($"Totalt att betala: {order.TotalAmount} kr\nVälj betalningsmetod:");
+
+        for (int i = 0; i < methods.Count; i++)
+        {
+            Console.WriteLine($"{i + 1}: {methods[i].Name}");
+        }
+        Console.Write("\nAnge nummer: ");
+        var input = Console.ReadLine();
+        if (int.TryParse(input, out var index) && index > 0 && index <= methods.Count)
+        {
+            var method = methods[index - 1];
+            await _paymentService.CreatePaymentAsync(order.Id, method.Id, order.TotalAmount);
+            Console.WriteLine($"\nBetalning med '{method.Name}' genomförd!");
+            await Task.Delay(1000);
+        }
+        else
+        {
+            Console.WriteLine("Ogiltligt val");
+            await Task.Delay(1000);
+        }
+
+        await ShowUserMenuAsync();
+    }
 }
 class AuthorityComparer : IEqualityComparer<Authority>
 {

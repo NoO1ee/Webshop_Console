@@ -45,10 +45,10 @@ public class CartService
 
     public IReadOnlyList<CartItem> GetItems() => _items.AsReadOnly();
 
-    public async Task<bool> CheckoutAsync(User user)
+    public async Task<Order?> CheckoutAsync(User user)
     {
         if(!_items.Any())
-            return false;
+            return null;
 
         var order = new Order
         {
@@ -67,6 +67,6 @@ public class CartService
         await _db.Orders.AddAsync(order);
         await _db.SaveChangesAsync();
         _items.Clear();
-        return true;
+        return order;
     }
 }
