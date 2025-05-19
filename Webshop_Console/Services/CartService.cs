@@ -60,7 +60,8 @@ public class CartService
                 Quantity = i.Quantity, 
                 PriceAtPurchase = i.Article.Price * i.Quantity,
                 UnitPrice = i.Article.Price
-            }).ToList()
+            }).ToList(),
+            TotalAmount = _items.Sum(i => i.Article.Price * i.Quantity)
         };
 
         await _db.Orders.AddAsync(order);
