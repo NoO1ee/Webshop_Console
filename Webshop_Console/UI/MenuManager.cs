@@ -20,6 +20,7 @@ public class MenuManager
     readonly CartService _cartService;
     readonly PaymentService _paymentService;
     readonly List<Article> _cart = new List<Article>();
+    readonly OrderService _orderService;
 
     User? _currentUser;
 
@@ -30,6 +31,7 @@ public class MenuManager
         _productService = productService;
         _cartService = new CartService(db);
         _paymentService = new PaymentService(db);
+        _orderService = new OrderService(db);
     }
 
 
@@ -80,7 +82,7 @@ public class MenuManager
     {
         var options = new[]
         {
-            Option("Se ordrar", ShowOrders),
+            Option("Se ordrar", ManageOrderAsync),
             Option("Artiklar", ShowProductManagementMenuAsync),
             LogoutOption()
         };
@@ -106,6 +108,7 @@ public class MenuManager
         {
             Option("Visa produkter", ShowProductsAsync),
             Option("Visa kundvagn", ShowCartAsync),
+            Option("Se dina ordrar", ShowMyOrdersAsync),
             LogoutOption()
         };
         Console.WriteLine("Test");
@@ -502,6 +505,115 @@ public class MenuManager
     }
 
 
+
+    #endregion
+
+    #region Order Funktioner
+
+    async Task ManageOrderAsync()
+    {
+        Console.Clear();
+        var orders = await _orderService.GetAllOrdersAsync();
+        Console.WriteLine("Alla ordrar:");
+        Console.WriteLine("Id | Datum | Användare | Totalt | Betalning");
+
+        foreach(var o in orders)
+        {
+            var paid = o.Payment != null ? o.Payment.Method?.Name : "Ej betald";
+            Console.WriteLine($"{o.Id, -3}|{o.OrderDate:g}|{o.User!.Username, -12}|{o.TotalAmount,8} kr |{paid}");
+        }
+        Console.WriteLine();
+        Console.Write("Ange order-Id att redigera (tomt för att gå tillbaka): ");
+        var input = Console.ReadLine()?.Trim();
+        if (int.TryParse(input, out var id))
+        {
+            var order = await _orderService.GetByIdAsync(id);
+            if(order != null)
+                await ShowOrderDetailsAsync(order, isAdmin: true);
+        }
+        await ShowAdminMenuAsync();
+    }
+
+    async Task ShowMyOrdersAsync()
+    {
+        Console.Clear();
+        if(_currentUser == null)
+            return;
+
+        var orders = await _orderService.GetOrdersByUserIdAsync(_currentUser.Id);
+        Console.WriteLine("Dina ordrar:");
+        foreach (var o in orders)
+        {
+            Console.WriteLine($"{o.Id}: {o.OrderDate:g} - {o.TotalAmount} kr");
+        }
+        Console.WriteLine();
+        Console.Write("Ange id för att få en detalirad order (tomt för att gå tillbaka): ");
+        var input = Console.ReadLine()?.Trim();
+        if(int.TryParse(input, out var id))
+        {
+            var order = await _orderService.GetByIdAsync(id);
+            if (order != null)
+                await ShowOrderDetailsAsync(order, isAdmin: false);
+        }
+
+        await ShowUserMenuAsync();
+    }
+
+    async Task ShowOrderDetailsAsync(Order order, bool isAdmin)
+    {
+        Console.Clear();
+        Console.WriteLine($"Order {order.Id} - {order.OrderDate:g}");
+        Console.WriteLine($"Användare: {order.User.Username} - {order.User.Name}");
+        Console.WriteLine($"Adress: {order.User.Address}, {order.User.Street}, {order.User.City}");
+        Console.WriteLine($"Telefon: {order.User.PhoneNumber}, E-post: {order.User.Email}");
+        Console.WriteLine(new string('-', 40));
+        Console.WriteLine("Produkter:");
+        foreach (var item in order.Items)
+        {
+            Console.WriteLine($"{item.Article.Name} x{item.Quantity} - {item.UnitPrice} kr = {item.PriceAtPurchase} kr");
+        }
+        Console.WriteLine(new string('-', 40));
+        Console.WriteLine($"Total: {order.TotalAmount} kr");
+
+        var paymentInfo = order.Payment != null ? $"{order.Payment.Method.Name} - {order.Payment.Amount}" : "Ej betald";
+
+        Console.WriteLine($"Betalning: {paymentInfo}");
+        Console.WriteLine();
+        var options = new List<(string, Action)>();
+        if (isAdmin)
+        {
+            Console.WriteLine();
+            Console.WriteLine("Vill du uppdatera ordern? Tryck Enter om JA");
+            var input = Console.ReadKey().Key;
+            if (input == ConsoleKey.Enter)
+                await EditOrderAsync(order);
+            else
+                await ShowAdminMenuAsync();
+
+        }
+        else
+        {
+            Console.WriteLine("Tryck på valfri tagent för att gå tillbaka");
+            Console.ReadKey(true);
+            await ShowUserMenuAsync();
+        }
+    }
+
+    async Task EditOrderAsync(Order order)
+    {
+        Console.Clear();
+        Console.Write($"Nytt totalbelopp [{order.TotalAmount}]: ");
+        var input = Console.ReadLine()?.Trim();
+        if(decimal.TryParse(input, out var total))
+            order.TotalAmount = total;
+        else
+            Console.WriteLine("Ogiltligt belopp");
+
+        var ok = await _orderService.UpdateOrderAsync(order);
+        Console.WriteLine(ok ? "Order uppdaterad!" : "Uppdatering misslyckades");
+        await Task.Delay(1000);
+        await ShowOrderDetailsAsync(order, isAdmin: true);
+    }
 
     #endregion
 

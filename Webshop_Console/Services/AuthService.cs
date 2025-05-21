@@ -108,10 +108,10 @@ public class AuthService
         var email = Console.ReadLine()?.Trim();
 
         Console.Write("Ålder: ");
-        var country = Console.ReadLine()?.Trim();
+        var age = Console.ReadLine()?.Trim();
 
 
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(street) || string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(country))
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(street) || string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(age))
         {
             Console.WriteLine("Du måste fylla i allt.");
             await Task.Delay(1000);
@@ -143,7 +143,7 @@ public class AuthService
             City = city,
             PhoneNumber = phone,
             Email = email,
-            Age = int.TryParse(country, out var age) ? age : null,
+            Age = int.TryParse(age, out var checkInt) ? checkInt : null,
             Authorities = new List<Authority> { userRole }
         };
 
