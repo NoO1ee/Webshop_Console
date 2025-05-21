@@ -84,6 +84,8 @@ public class MenuManager
         {
             Option("Se ordrar", ManageOrderAsync),
             Option("Artiklar", ShowProductManagementMenuAsync),
+            Option("Visa produkter", ShowProductsAsync),
+            Option("Visa kundvagn", ShowCartAsync),
             LogoutOption()
         };
         return Menu.ShowMenu("Adminpanel", "Adminpanel", options);
@@ -94,11 +96,11 @@ public class MenuManager
         var options = new []
         {
             Option("Se statistik", ShowStatistics),
+            Option("Se ordrar", ManageOrderAsync),
             Option("Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
             LogoutOption()
         };
-
         return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options);
     }
 
@@ -111,7 +113,6 @@ public class MenuManager
             Option("Se dina ordrar", ShowMyOrdersAsync),
             LogoutOption()
         };
-        Console.WriteLine("Test");
         return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
     }
 
@@ -131,7 +132,6 @@ public class MenuManager
     #endregion
 
     // Ta bort senare när jag har implementerat...
-    void ShowOrders() => Console.WriteLine("Implementera...");
     void ShowStatistics() => Console.WriteLine("Implementera...");
 
 
