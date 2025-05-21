@@ -194,7 +194,7 @@ public class MenuManager
             var action = cmd[0];
             var roleName = cmd.Substring(1);
 
-            var role = allRoles.FirstOrDefault(a => a.Name.Equals(roleName, StringComparison.OrdinalIgnoreCase));
+            var role = allRoles.FirstOrDefault(a => a.Name!.Equals(roleName, StringComparison.OrdinalIgnoreCase));
 
             if (role == null)
             {
@@ -316,7 +316,7 @@ public class MenuManager
             await ShowProductManagementMenuAsync();
         }
 
-        Console.Write($"Nytt namn [{existing.Name}]: ");
+        Console.Write($"Nytt namn [{existing!.Name}]: ");
         var name = Console.ReadLine()?.Trim();
         Console.Write($"Ny beskrivning [{existing.Bio}]: ");
         var bio = Console.ReadLine()?.Trim();
@@ -484,7 +484,6 @@ public class MenuManager
                 if(_currentUser == null)
                     return;
                 var ok = await _cartService.CheckoutAsync(_currentUser);
-                //Console.WriteLine(ok == null ? "Betalning genomförd och order skapad!" : "Betalning misslyckades");
 
                 if(ok == null)
                 {
@@ -522,7 +521,11 @@ public class MenuManager
         if (int.TryParse(input, out var index) && index > 0 && index <= methods.Count)
         {
             var method = methods[index - 1];
-            await _paymentService.CreatePaymentAsync(order.Id, method.Id, order.TotalAmount);
+            var payment = await _paymentService.CreatePaymentAsync(order.Id, method.Id, order.TotalAmount);
+            order.PaymentId = payment.Id + 1;
+            _db.Orders.Update(order);
+            await _db.SaveChangesAsync();
+
             Console.WriteLine($"\nBetalning med '{method.Name}' genomförd!");
             await Task.Delay(1000);
         }
