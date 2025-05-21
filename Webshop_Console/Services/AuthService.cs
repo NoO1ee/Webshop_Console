@@ -89,16 +89,38 @@ public class AuthService
         var username = Prompt("Välj användarnamn: ");
         var password = Prompt("Välj lösenord: ", hideInput: true);
 
-        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+        Console.Write("Förnamn och Efternamn: ");
+        var name = Console.ReadLine()?.Trim();
+
+        Console.Write("Adress: ");
+        var address = Console.ReadLine()?.Trim();
+
+        Console.Write("Postnummer: ");
+        var street = Console.ReadLine()?.Trim();
+
+        Console.Write("Stad: ");
+        var city = Console.ReadLine()?.Trim();
+
+        Console.Write("Telefonnummer: ");
+        var phone = Console.ReadLine()?.Trim();
+
+        Console.Write("E-post: ");
+        var email = Console.ReadLine()?.Trim();
+
+        Console.Write("Ålder: ");
+        var country = Console.ReadLine()?.Trim();
+
+
+        if (string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password) || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(address) || string.IsNullOrWhiteSpace(street) || string.IsNullOrWhiteSpace(city) || string.IsNullOrWhiteSpace(phone) || string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(country))
         {
-            Console.WriteLine("Användarnamn och lösenord får inte vara tomma");
+            Console.WriteLine("Du måste fylla i allt.");
             await Task.Delay(1000);
             return;
         }
 
-        if (await _db.Users.AnyAsync(u => u.Username == username))
+        if (await _db.Users.AnyAsync(u => u.Username == username) || await _db.Users.AnyAsync(u => u.PhoneNumber == phone))
         {
-            Console.WriteLine("Användarnamnet finns redan");
+            Console.WriteLine("Användarnamnet finns redan eller telefonnummer finns redan");
             await Task.Delay(1000);
             return;
         }
@@ -115,6 +137,13 @@ public class AuthService
         {
             Username = username,
             PasswordHash = Hash(password),
+            Name = name,
+            Address = address,
+            Street = street,
+            City = city,
+            PhoneNumber = phone,
+            Email = email,
+            Age = int.TryParse(country, out var age) ? age : null,
             Authorities = new List<Authority> { userRole }
         };
 
