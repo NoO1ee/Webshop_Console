@@ -106,15 +106,26 @@ public class MenuManager
 
     Task ShowUserMenuAsync()
     {
-        var options = new[]
+        var featured = _productService.GetAllAsync().Result.Where(p => p.IsFeatured).Take(3).ToList();
+
+        var options = new List<(string, Action)>();
+        var featuredText = new StringBuilder()
+            .AppendLine("Utvalda produkter:");
+        foreach (var p in featured)
         {
-            Option("Visa produkter", ShowProductsAsync),
-            Option("Visa kundvagn", ShowCartAsync),
-            Option("Se dina ordrar", ShowMyOrdersAsync),
-            Option("Redigera kontaktuppgifter", ManageProfileAsync),
-            LogoutOption()
-        };
-        return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
+            featuredText.Clear();
+            featuredText.AppendLine($"{p.Name} - {p.Price} kr");
+            featuredText.AppendLine(p.Bio.Length > 50 ? p.Bio.Substring(0, 50) + "..." : p.Bio);
+            options.Add(Option(featuredText.ToString(), () => ShowProductsDetailsAsync(p)));
+        }
+
+        
+        options.Add(Option("Visa produkter", ShowProductsAsync));
+        options.Add(Option("Visa kundvagn", ShowCartAsync));
+        options.Add(Option("Redigera kontaktuppgifter", ManageProfileAsync));
+        options.Add(Option("Se mina ordrar", ShowMyOrdersAsync));
+        options.Add(LogoutOption());
+        return Menu.ShowMenu("Användarpanel", "Huvudmenu", options.ToArray());
     }
 
     Task ShowProductManagementMenuAsync()
@@ -648,7 +659,7 @@ public class MenuManager
         var phone = Console.ReadLine()?.Trim();
         Console.Write($"Adress [{user.Address}]: ");
         var address = Console.ReadLine()?.Trim();
-        Console.Write($"Postnummer [{user.City}]: ");
+        Console.Write($"Postnummer [{user.Street}]: ");
         var city = Console.ReadLine()?.Trim();
         Console.Write($"Stad [{user.City}]: ");
         var postNumber = Console.ReadLine()?.Trim();
