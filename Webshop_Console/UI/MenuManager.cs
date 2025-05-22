@@ -35,7 +35,7 @@ public class MenuManager
     }
 
 
-
+    #region Main funktioner
     // Kör asynkrona actions i en sync action
     void RunAsync(Func<Task> func) => Task.Run(func).Wait();
 
@@ -62,6 +62,7 @@ public class MenuManager
         else
             await ShowUserMenuAsync();
     }
+    #endregion
 
     #region Menyer
 
