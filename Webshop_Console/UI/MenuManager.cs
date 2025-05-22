@@ -95,7 +95,6 @@ public class MenuManager
     {
         var options = new []
         {
-            Option("Se statistik", ShowStatistics),
             Option("Se ordrar", ManageOrderAsync),
             Option("Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
@@ -112,6 +111,7 @@ public class MenuManager
             Option("Visa produkter", ShowProductsAsync),
             Option("Visa kundvagn", ShowCartAsync),
             Option("Se dina ordrar", ShowMyOrdersAsync),
+            Option("Redigera kontaktuppgifter", ManageProfileAsync),
             LogoutOption()
         };
         return Menu.ShowMenu("Användarpanel", "Huvudmenu", options);
@@ -131,9 +131,6 @@ public class MenuManager
     }
 
     #endregion
-
-    // Ta bort senare när jag har implementerat...
-    void ShowStatistics() => Console.WriteLine("Implementera...");
 
 
     #region Admin funktioner
@@ -614,6 +611,73 @@ public class MenuManager
         Console.WriteLine(ok ? "Order uppdaterad!" : "Uppdatering misslyckades");
         await Task.Delay(1000);
         await ShowOrderDetailsAsync(order, isAdmin: true);
+    }
+
+    #endregion
+
+    #region Redigera kuppgifter
+
+    async Task ManageProfileAsync()
+    {
+        Console.Clear();
+        if (_currentUser == null)
+        {
+            Console.WriteLine("Ingen användare inloggad.");
+            await Task.Delay(1000);
+            await ShowUserMenuAsync();
+            return;
+        }
+
+        var user = await _db.Users.FindAsync(_currentUser.Id);
+        if(user == null)
+        {
+            Console.WriteLine("Ingen användare hittades i databaseb.");
+            await Task.Delay(1000);
+            await ShowUserMenuAsync();
+            return;
+        }
+
+        Console.WriteLine("Redigera din kontaktuppgifter. Lämna tomt för att behålla nuvarande");
+        Console.WriteLine();
+
+        Console.Write($"Name [{user.Name}]: ");
+        var name = Console.ReadLine()?.Trim();
+        Console.Write($"E-post [{user.Email}]: ");
+        var email = Console.ReadLine()?.Trim();
+        Console.Write($"Telefon [{user.PhoneNumber}]: ");
+        var phone = Console.ReadLine()?.Trim();
+        Console.Write($"Adress [{user.Address}]: ");
+        var address = Console.ReadLine()?.Trim();
+        Console.Write($"Postnummer [{user.City}]: ");
+        var city = Console.ReadLine()?.Trim();
+        Console.Write($"Stad [{user.City}]: ");
+        var postNumber = Console.ReadLine()?.Trim();
+        Console.Write($"Ålder [{user.Age}]: ");
+        var age = Console.ReadLine()?.Trim();
+
+        if(!string.IsNullOrWhiteSpace(name))
+            user.Name = name;
+        if(!string.IsNullOrWhiteSpace(email))
+            user.Email = email;
+        if(!string.IsNullOrWhiteSpace(phone))
+            user.PhoneNumber = phone;
+        if(!string.IsNullOrWhiteSpace(address))
+            user.Address = address;
+        if(!string.IsNullOrWhiteSpace(city))
+            user.City = city;
+        if(!string.IsNullOrWhiteSpace(postNumber))
+            user.Street = postNumber;
+        if(int.TryParse(age, out var a))
+            user.Age = a;
+
+        _db.Users.Update(user);
+        await _db.SaveChangesAsync();
+        _currentUser = user;
+
+        Console.WriteLine("Dina uppgifter har uppdaterats.");
+        await Task.Delay(1000);
+        await ShowUserMenuAsync();
+
     }
 
     #endregion
