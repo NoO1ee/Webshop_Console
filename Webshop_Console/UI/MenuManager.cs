@@ -99,6 +99,7 @@ public class MenuManager
             Option("Se ordrar", ManageOrderAsync),
             Option("Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
+            Option("Betalningsmetoder", ManagePaymentMethodsAsync),
             LogoutOption()
         };
         return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options);
@@ -617,6 +618,7 @@ public class MenuManager
 
     #endregion
 
+    #region Betalnings funktioner
     async Task ShowPaymentMethodMenuAsync(Order order)
     {
         Console.Clear();
@@ -649,6 +651,90 @@ public class MenuManager
 
         await ShowUserMenuAsync();
     }
+
+    async Task ManagePaymentMethodsAsync()
+    {
+        Console.Clear();
+        var methods = await _paymentService.GetAllMethodsAsync();
+        Console.WriteLine("Betalningsmetoder:");
+        foreach(var m in methods)
+        {
+            Console.WriteLine($"{m.Id}: {m.Name}");
+        }
+        Console.WriteLine();
+        Console.WriteLine("A = lägg till, U = uppdatera, D = Ta bort, Enter = Tillbaka");
+        var key = Console.ReadKey(true).Key;
+        switch (key)
+        {
+            case ConsoleKey.A:
+                await AddPaymentMethodAsync();
+                break;
+            case ConsoleKey.U:
+                await UpdatePaymentMethodAsync(methods);
+                break;
+            case ConsoleKey.D:
+                await DeletePaymentMethodAsync(methods);
+                break;
+            case ConsoleKey.Enter:
+                await ShowOwnerMenuAsync(_currentUser!);
+                break;
+        }
+        await ManagePaymentMethodsAsync();
+    }
+
+
+    async Task AddPaymentMethodAsync()
+    {
+        Console.Clear();
+        Console.Write("Nytt namn på betalningsmetod: ");
+        string name = Console.ReadLine()?.Trim()!;
+        if(!string.IsNullOrWhiteSpace(name))
+            await _paymentService.CreatePaymentMethodAsync(name!);
+        else
+            Console.WriteLine("Ogiltligt namn");
+    }
+
+    async Task UpdatePaymentMethodAsync(List<PaymentMethod> methods)
+    {
+        Console.Clear();
+        Console.Write("Ange ID för metod att ändra: ");
+        if(int.TryParse(Console.ReadLine(), out var id))
+        {
+            var method = methods.FirstOrDefault(m => m.Id == id);
+            if (method != null)
+            {
+                Console.Write($"Nytt namn [{method.Name}]: ");
+                var name = Console.ReadLine()?.Trim();
+                if (!string.IsNullOrWhiteSpace(name))
+                    method.Name = name;
+                else
+                    Console.WriteLine("Ogiltligt namn");
+            }
+            else
+                Console.WriteLine("Ingen sådan metod hittades");
+        }
+    }
+
+    async Task DeletePaymentMethodAsync(List<PaymentMethod> methods)
+    {
+        Console.Clear();
+        Console.Write("Ange ID för metod att ta bort: ");
+        if (int.TryParse(Console.ReadLine(), out var id))
+        {
+            var method = methods.FirstOrDefault(m => m.Id == id);
+            if (method != null)
+            {
+                Console.Write($"Är du säker på att du vill ta bort '{method.Name}'? (Y/N): ");
+                var key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Y)
+                    await _paymentService.DeletePaymentMethodAsync(method.Id);
+            }
+            else
+                Console.WriteLine("Ingen sådan metod hittades");
+        }
+    }
+
+    #endregion
 }
 class AuthorityComparer : IEqualityComparer<Authority>
 {
