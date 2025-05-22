@@ -288,6 +288,8 @@ public class MenuManager
         var supId = int.Parse(Console.ReadLine()!);
         Console.Write("Enhets-ID: ");
         var unitId = int.Parse(Console.ReadLine()!);
+        Console.Write("Visas startsidan? (Y/N): ");
+        var showOnStart = Console.ReadKey(true).Key == ConsoleKey.Y;
 
         var article = new Article
         {
@@ -300,7 +302,8 @@ public class MenuManager
             Price = price,
             SupplierId = supId,
             UnitId = unitId,
-            DiscountId = 1
+            DiscountId = 1,
+            IsFeatured = showOnStart
         };
 
         await _productService.AddAsync(article);
@@ -338,8 +341,10 @@ public class MenuManager
         var supText = Console.ReadLine();
         Console.Write($"Ny enhets-ID [{existing.UnitId}]: ");
         var unitText = Console.ReadLine();
+        Console.Write($"nVisas på startsidan? (Y/N) [{existing.IsFeatured}]: ");
+        var showOnStart = Console.ReadKey(true).Key == ConsoleKey.Y;
 
-        if(!string.IsNullOrWhiteSpace(name))
+        if (!string.IsNullOrWhiteSpace(name))
             existing.Name = name;
         if(!string.IsNullOrWhiteSpace(bio))
             existing.Bio = bio;
@@ -349,6 +354,7 @@ public class MenuManager
             existing.SupplierId = sup;
         if(int.TryParse(unitText, out var unit))
             existing.UnitId = unit;
+        existing.IsFeatured = showOnStart;
 
         var ok = await _productService.UpdateAsync(existing);
         Console.WriteLine(ok ? "Produkt uppdaterad!" : "Uppdateringen misslyckades");
