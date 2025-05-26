@@ -78,7 +78,7 @@ public class MenuManager
         await Menu.ShowMenu("Duck4Hire", "Log in / Register", options: options, titleColor: ConsoleColor.Yellow, textColor: ConsoleColor.White, selectedColor: ConsoleColor.Green, minBoxWidth: 30, boxHeight: 3);
     }
 
-
+    //Admin meny
     Task ShowAdminMenuAsync()
     {
         var options = new[]
@@ -92,6 +92,7 @@ public class MenuManager
         return Menu.ShowMenu("Adminpanel", "Adminpanel", options);
     }
 
+    //Ägar meny
     Task ShowOwnerMenuAsync(User owner)
     {
         var options = new []
@@ -432,14 +433,26 @@ public class MenuManager
         }
         Console.WriteLine();
 
-        Console.Write("Ange produkt ID för detaljer (tomt för tillbaka): ");
+        Console.Write("Ange produkt ID eller namn för detaljer (tomt för tillbaka): ");
         var txt = Console.ReadLine()?.Trim();
-        if (int.TryParse(txt, out var id))
+        if (!string.IsNullOrEmpty(txt))
         {
-            var prod = products.FirstOrDefault(x => x.Id == id);
-            if (prod != null)
+            Article? product = null;
+            if(int.TryParse(txt, out int id))
+                product = products.FirstOrDefault(p => p.Id == id);
+
+            if (product == null)
+                product = products.FirstOrDefault(x => x.Name.IndexOf(txt, StringComparison.OrdinalIgnoreCase) >= 0);
+
+            if (product != null)
             {
-                await ShowProductsDetailsAsync(prod);
+                await ShowProductsDetailsAsync(product);
+                return;
+            }
+            else
+            {
+                Console.WriteLine("Hittade ingen produkt med det ID eller namn.");
+                await Task.Delay(1000);
             }
         }
 
