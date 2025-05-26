@@ -1,6 +1,6 @@
 ﻿namespace Webshop_Console.Models;
 
-public class Payment : BaseEntity
+public class PaymentModel : IDModel
 {
     public decimal Amount { get; set; }
     public DateTime PaymentDate { get; set; } = DateTime.Now;
@@ -8,6 +8,6 @@ public class Payment : BaseEntity
     public PaymentMethod? Method { get; set; }
 
     public int OrderId { get; set; }
-    public Order? Order { get; set; }
+    public OrderModel? Order { get; set; }
 
 }

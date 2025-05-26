@@ -7,14 +7,14 @@ using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
 
-public class CartService
+public class CartHandler
 {
     readonly MyDbContext _db;
     readonly List<CartItem> _items = new();
 
-    public CartService(MyDbContext db) => _db = db;
+    public CartHandler(MyDbContext db) => _db = db;
 
-    public async Task AddToCart(Article article, int quantity = 1)
+    public async Task AddToCart(ArticleModel article, int quantity = 1)
     {
         var existing = _items.FirstOrDefault(i => i.Article.Id == article.Id);
         if(existing != null)
@@ -45,12 +45,12 @@ public class CartService
 
     public IReadOnlyList<CartItem> GetItems() => _items.AsReadOnly();
 
-    public async Task<Order?> CheckoutAsync(User user)
+    public async Task<OrderModel?> CheckoutAsync(UserModel user)
     {
         if(!_items.Any())
             return null;
 
-        var order = new Order
+        var order = new OrderModel
         {
             UserId = user.Id,
             OrderDate = DateTime.Now,

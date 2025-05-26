@@ -8,21 +8,21 @@ using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
 
-public class PaymentService
+public class PaymentHandler
 {
 
     readonly MyDbContext _db;
 
-    public PaymentService(MyDbContext db) => _db = db;
+    public PaymentHandler(MyDbContext db) => _db = db;
 
     public async Task<List<PaymentMethod>> GetAllMethodsAsync()
     {
         return await _db.PaymentMethods.OrderBy(p => p.Name).ToListAsync();
     }
 
-    public async Task<Payment> CreatePaymentAsync(int orderId, int methodId, decimal amount)
+    public async Task<PaymentModel> CreatePaymentAsync(int orderId, int methodId, decimal amount)
     {
-        var payment = new Payment
+        var payment = new PaymentModel
         {
             OrderId = orderId,
             MethodId = methodId,
@@ -69,9 +69,9 @@ public class PaymentService
         return changes > 0;
     }
 
-    public async Task<Payment> CreatePaymentMethodAsync(int orderId, int methodId, decimal amount)
+    public async Task<PaymentModel> CreatePaymentMethodAsync(int orderId, int methodId, decimal amount)
     {
-        var payment = new Payment
+        var payment = new PaymentModel
         {
             OrderId = orderId,
             MethodId = methodId,

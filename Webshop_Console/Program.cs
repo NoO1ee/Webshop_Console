@@ -14,8 +14,8 @@ internal class Program
         Console.OutputEncoding = Encoding.UTF8;
 
         using var db = new MyDbContext();
-        var auth = new AuthService(db);
-        var prod = new ProductService(db);
+        var auth = new LoginHandler(db);
+        var prod = new ProductHandler(db);
         var menus = new MenuManager(auth, db, prod);
         await menus.ShowMainMenuAsync();
     }

@@ -1,6 +1,6 @@
 ﻿namespace Webshop_Console.Models;
 
-public class Article : BaseEntity
+public class ArticleModel : IDModel
 {
     public string? Name { get; set; }
     public string EanCode { get; set; } = string.Empty;
@@ -12,10 +12,10 @@ public class Article : BaseEntity
     public bool IsFeatured { get; set; } = false;
 
     public int SupplierId { get; set; }
-    public Supplier Supplier { get; set; } = null!;
+    public SupplierModel Supplier { get; set; } = null!;
 
     public int UnitId { get; set; }
-    public Unit Unit { get; set; } = null!;
+    public UnitModel Unit { get; set; } = null!;
 
     public int? DiscountId { get; set; }
     public Discount? Discount { get; set; } = null!;

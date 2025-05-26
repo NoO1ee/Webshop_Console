@@ -9,6 +9,6 @@ namespace Webshop_Console.Services;
 
 public class CartItem
 {
-    public Article Article { get; set; }
+    public ArticleModel Article { get; set; }
     public int Quantity { get; set; }
 }

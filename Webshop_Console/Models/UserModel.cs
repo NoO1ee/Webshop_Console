@@ -1,6 +1,6 @@
 ﻿namespace Webshop_Console.Models;
 
-public class User : BaseEntity
+public class UserModel : IDModel
 {
     public string? Username { get; set; }
     public string? PasswordHash { get; set; }
@@ -11,5 +11,5 @@ public class User : BaseEntity
     public string? PhoneNumber { get; set; }
     public string? Email { get; set; }
     public int? Age { get; set; }
-    public virtual ICollection<Authority> Authorities { get; set; } = new List<Authority>();
+    public virtual ICollection<AuthorityModel> Authorities { get; set; } = new List<AuthorityModel>();
 }

@@ -8,34 +8,34 @@ using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
 
-public class ProductService
+public class ProductHandler
 {
     readonly MyDbContext _db;
-    public ProductService(MyDbContext db) => _db = db;
+    public ProductHandler(MyDbContext db) => _db = db;
 
-    public async Task<List<Article>> GetAllAsync()
+    public async Task<List<ArticleModel>> GetAllAsync()
     {
         return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).ToListAsync();
     }
 
-    public async Task<List<Article>> GetByCategoryAsync(string category)
+    public async Task<List<ArticleModel>> GetByCategoryAsync(string category)
     {
         return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).Where(a => a.Category.ToLower() == category.ToLower()).ToListAsync();
     }
 
-    public async Task<Article?> GetByIdAsync(int id)
+    public async Task<ArticleModel?> GetByIdAsync(int id)
     {
         return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).FirstOrDefaultAsync(a => a.Id == id);
 
     }
 
-    public async Task AddAsync(Article article)
+    public async Task AddAsync(ArticleModel article)
     {
         _db.Articles.Add(article);
         await _db.SaveChangesAsync();
     }
 
-    public async Task<bool> UpdateAsync(Article article)
+    public async Task<bool> UpdateAsync(ArticleModel article)
     {
         var existing = await _db.Articles.FindAsync(article.Id);
         if(existing == null)

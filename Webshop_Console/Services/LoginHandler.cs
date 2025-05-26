@@ -8,10 +8,10 @@ using Webshop_Console.Models;
 
 namespace Webshop_Console.Services;
 
-public class AuthService
+public class LoginHandler
 {
     readonly MyDbContext _db;
-    public AuthService(MyDbContext db) => _db = db;
+    public LoginHandler(MyDbContext db) => _db = db;
 
     private static string ReadPassword()
     {
@@ -34,14 +34,14 @@ public class AuthService
 
     }
 
-    private static string Hash(string text)
+    static string Hash(string text)
     {
         using var sha = SHA256.Create();
         var bytes = sha.ComputeHash(Encoding.UTF8.GetBytes(text));
         return Convert.ToBase64String(bytes);
     }
 
-    public async Task<User?> LoginAsync()
+    public async Task<UserModel?> LoginAsync()
     {
         Console.Clear();
         var username = Prompt("Ange användarnamn: ");
@@ -71,13 +71,13 @@ public class AuthService
         return user;
     }
 
-    private string? Prompt(string message, bool hideInput = false)
+    string? Prompt(string message, bool hideInput = false)
     {
         Console.Write(message);
         return hideInput ? ReadPassword() : Console.ReadLine()?.Trim();
     }
 
-    private async Task<Authority?> GetRoleAsync(string roleName)
+    async Task<AuthorityModel?> GetRoleAsync(string roleName)
     {
         var norm = roleName.ToLower();
         return await _db.Authorities.FirstOrDefaultAsync(a => a.Name.ToLower() == norm);
@@ -133,7 +133,7 @@ public class AuthService
             return;
         }
 
-        var user = new User
+        var user = new UserModel
         {
             Username = username,
             PasswordHash = Hash(password),
@@ -144,7 +144,7 @@ public class AuthService
             PhoneNumber = phone,
             Email = email,
             Age = int.TryParse(age, out var checkInt) ? checkInt : null,
-            Authorities = new List<Authority> { userRole }
+            Authorities = new List<AuthorityModel> { userRole }
         };
 
         _db.Users.Add(user);

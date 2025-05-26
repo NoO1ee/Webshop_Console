@@ -14,24 +14,24 @@ namespace Webshop_Console.UI;
 
 public class MenuManager
 {
-    readonly AuthService _auth;
+    readonly LoginHandler _auth;
     readonly MyDbContext _db;
-    readonly ProductService _productService;
-    readonly CartService _cartService;
-    readonly PaymentService _paymentService;
-    readonly List<Article> _cart = new List<Article>();
-    readonly OrderService _orderService;
+    readonly ProductHandler _productService;
+    readonly CartHandler _cartService;
+    readonly PaymentHandler _paymentService;
+    readonly List<ArticleModel> _cart = new List<ArticleModel>();
+    readonly OrderHandler _orderService;
 
-    User? _currentUser;
+    UserModel? _currentUser;
 
-    public MenuManager(AuthService auth, MyDbContext db, ProductService productService)
+    public MenuManager(LoginHandler auth, MyDbContext db, ProductHandler productService)
     {
         _auth = auth;
         _db = db;
         _productService = productService;
-        _cartService = new CartService(db);
-        _paymentService = new PaymentService(db);
-        _orderService = new OrderService(db);
+        _cartService = new CartHandler(db);
+        _paymentService = new PaymentHandler(db);
+        _orderService = new OrderHandler(db);
     }
 
 
@@ -53,7 +53,7 @@ public class MenuManager
             await RouteByRoleAsync(_currentUser);
     }
 
-    async Task RouteByRoleAsync(User user)
+    async Task RouteByRoleAsync(UserModel user)
     {
         if (user.Authorities.Any(r => r.IsOwner))
             await ShowOwnerMenuAsync(user);
@@ -93,7 +93,7 @@ public class MenuManager
     }
 
     //Ägar meny
-    Task ShowOwnerMenuAsync(User owner)
+    Task ShowOwnerMenuAsync(UserModel owner)
     {
         var options = new []
         {
@@ -147,7 +147,7 @@ public class MenuManager
 
 
     #region Admin funktioner
-    async Task<List<User>> ListUsersAsync()
+    async Task<List<UserModel>> ListUsersAsync()
     {
         var all = await _db.Users
             .OrderBy(u =>  u.Id).ToListAsync();
@@ -160,9 +160,9 @@ public class MenuManager
         return all;
     }
 
-    async Task<User?> SelectUserAsync(List<User> users)
+    async Task<UserModel?> SelectUserAsync(List<UserModel> users)
     {
-        Console.Write("Ange ID på användare att redigera (eller tomt för att avbryta): ");
+        Console.Write("Vilken användare vill du redigera? Ange ID eller lämna det tomt för att gå tillbaka: ");
         var line = Console.ReadLine()?.Trim();
         if (!int.TryParse(line, out var id))
             return null;
@@ -178,7 +178,7 @@ public class MenuManager
         return user;
     }
 
-    async Task EditRoleAsync(User user)
+    async Task EditRoleAsync(UserModel user)
     {
         while (true)
         {
@@ -293,7 +293,7 @@ public class MenuManager
         Console.Write("Visas startsidan? (Y/N): ");
         var showOnStart = Console.ReadKey(true).Key == ConsoleKey.Y;
 
-        var article = new Article
+        var article = new ArticleModel
         {
             Name = name!,
             EanCode = eanCode!,
@@ -317,7 +317,7 @@ public class MenuManager
     async Task UpdateProductAsync()
     {
         Console.Clear();
-        Console.Write("Ange ID på produkt för att uppdatera: ");
+        Console.Write("Vilken produkt vill du uppdatera? Ange ID: ");
         if (!int.TryParse(Console.ReadLine(), out var id))
         {
             Console.WriteLine("Ogiltligt ID");
@@ -368,7 +368,7 @@ public class MenuManager
     async Task DeleteProductAsync()
     {
         Console.Clear();
-        Console.Write("Ange ID på produkt att ta bort: ");
+        Console.Write("Vilken produkt vill du ta bort? Ange ID: ");
         if (!int.TryParse(Console.ReadLine(), out var id))
         {
             Console.WriteLine("Ogiltligt ID");
@@ -376,7 +376,7 @@ public class MenuManager
             await ShowProductManagementMenuAsync();
         }
 
-        Console.Write("Är du säker? ENTER för ja | ESC för nej: ");
+        Console.Write("Vill du verkligen ta bort produkten? Tryck Enter för att bekräfta, eller ESC för att abryta:  ");
         ConsoleKeyInfo key = Console.ReadKey(true);
 
         switch (key.Key)
@@ -417,7 +417,7 @@ public class MenuManager
     async Task ListAndSelectProductsAsync(string? category)
     {
         Console.Clear();
-        List<Article> products;
+        List<ArticleModel> products;
         
         if(string.IsNullOrEmpty(category))
             products = await _productService.GetAllAsync();
@@ -437,7 +437,7 @@ public class MenuManager
         var txt = Console.ReadLine()?.Trim();
         if (!string.IsNullOrEmpty(txt))
         {
-            Article? product = null;
+            ArticleModel? product = null;
             if(int.TryParse(txt, out int id))
                 product = products.FirstOrDefault(p => p.Id == id);
 
@@ -460,7 +460,7 @@ public class MenuManager
 
     }
 
-    Task ShowProductsDetailsAsync(Article product)
+    Task ShowProductsDetailsAsync(ArticleModel product)
     {
         var desc = new StringBuilder()
             .AppendLine($"Produkt: {product.Name}")
@@ -588,7 +588,7 @@ public class MenuManager
         await ShowUserMenuAsync();
     }
 
-    async Task ShowOrderDetailsAsync(Order order, bool isAdmin)
+    async Task ShowOrderDetailsAsync(OrderModel order, bool isAdmin)
     {
         Console.Clear();
         Console.WriteLine($"Order {order.Id} - {order.OrderDate:g}");
@@ -628,7 +628,7 @@ public class MenuManager
         }
     }
 
-    async Task EditOrderAsync(Order order)
+    async Task EditOrderAsync(OrderModel order)
     {
         Console.Clear();
         Console.Write($"Nytt totalbelopp [{order.TotalAmount}]: ");
@@ -714,7 +714,7 @@ public class MenuManager
     #endregion
 
     #region Betalnings funktioner
-    async Task ShowPaymentMethodMenuAsync(Order order)
+    async Task ShowPaymentMethodMenuAsync(OrderModel order)
     {
         Console.Clear();
         var methods = await _paymentService.GetAllMethodsAsync();
@@ -831,12 +831,12 @@ public class MenuManager
 
     #endregion
 }
-class AuthorityComparer : IEqualityComparer<Authority>
+class AuthorityComparer : IEqualityComparer<AuthorityModel>
 {
-    public bool Equals(Authority? x, Authority? y) =>
+    public bool Equals(AuthorityModel? x, AuthorityModel? y) =>
         x != null && y != null && x.Id == y.Id;
 
-    public int GetHashCode(Authority obj) => obj.Id;
+    public int GetHashCode(AuthorityModel obj) => obj.Id;
 }
 
 
