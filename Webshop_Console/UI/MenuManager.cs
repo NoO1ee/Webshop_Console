@@ -406,9 +406,9 @@ public class MenuManager
         var options = new[]
         {
             Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)),
-            Option("Stora", () => ListAndSelectProductsAsync("Stora")),
-            Option("Medium", () => ListAndSelectProductsAsync("Medium")),
-            Option("Små", () => ListAndSelectProductsAsync("Små")),
+            Option("Legendarisk", () => ListAndSelectProductsAsync("Legendarisk")),
+            Option("Episk", () => ListAndSelectProductsAsync("Episk")),
+            Option("Basic", () => ListAndSelectProductsAsync("Basic")),
             Option("Tillbaka", ShowUserMenuAsync)
         };
         return Menu.ShowMenu("Produktmeny", "Välj kategori", options);
