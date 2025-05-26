@@ -39,9 +39,8 @@ public class MenuManager
     // Kör asynkrona actions i en sync action
     void RunAsync(Func<Task> func) => Task.Run(func).Wait();
 
-    // För att slå ihop label och Func<Task> till string, action
+    //Kombinerar label och Func<Task> till en menyoption
     (string, Action) Option(string label, Func<Task> action) => (label, () => RunAsync(action));
-
     (string, Action) Option(string label, Action action) => (label, action);
 
     (string, Action) LogoutOption() => Option("Logga ut", () => ShowMainMenuAsync().Wait());
@@ -71,11 +70,11 @@ public class MenuManager
     {
         var options = new[]
         {
-            Option("Log in", HandleLoginAsync),
-            Option("Register", _auth.RegisterAsync),
-            Option("Exit", () => Environment.Exit(0))
+            Option("Logga in", HandleLoginAsync),
+            Option("Registrera", _auth.RegisterAsync),
+            Option("Avsluta", () => Environment.Exit(0))
         };
-        await Menu.ShowMenu("Duck4Hire", "Log in / Register", options: options, titleColor: ConsoleColor.Yellow, textColor: ConsoleColor.White, selectedColor: ConsoleColor.Green, minBoxWidth: 30, boxHeight: 3);
+        await Menu.ShowMenu("Duck4Hire", "Logga in / Registrera", options: options, titleColor: ConsoleColor.Yellow, textColor: ConsoleColor.White, selectedColor: ConsoleColor.Green, minBoxWidth: 30, boxHeight: 3);
     }
 
     //Admin meny
@@ -83,8 +82,8 @@ public class MenuManager
     {
         var options = new[]
         {
-            Option("Se ordrar", ManageOrderAsync),
-            Option("Artiklar", ShowProductManagementMenuAsync),
+            Option("Visa ordrar", ManageOrderAsync),
+            Option("Hantera Artiklar", ShowProductManagementMenuAsync),
             Option("Visa produkter", ShowProductsAsync),
             Option("Visa kundvagn", ShowCartAsync),
             LogoutOption()
@@ -97,10 +96,10 @@ public class MenuManager
     {
         var options = new []
         {
-            Option("Se ordrar", ManageOrderAsync),
-            Option("Artiklar", ShowProductManagementMenuAsync),
+            Option("Visa ordrar", ManageOrderAsync),
+            Option("Hantera Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
-            Option("Betalningsmetoder", ManagePaymentMethodsAsync),
+            Option("Hantera Betalningsmetoder", ManagePaymentMethodsAsync),
             LogoutOption()
         };
         return Menu.ShowMenu("Ägarpanel", "Ägarpanel", options);
@@ -310,7 +309,7 @@ public class MenuManager
 
         await _productService.AddAsync(article);
         Console.WriteLine("Produkten skapad!");
-        Thread.Sleep(1000);
+        await Task.Delay(1000);
         await ShowProductManagementMenuAsync();
     }
 
@@ -321,7 +320,7 @@ public class MenuManager
         if (!int.TryParse(Console.ReadLine(), out var id))
         {
             Console.WriteLine("Ogiltligt ID");
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
             await ShowProductManagementMenuAsync();
         }
 
@@ -329,7 +328,7 @@ public class MenuManager
         if (existing == null)
         {
             Console.WriteLine("Produkten hittades inte");
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
             await ShowProductManagementMenuAsync();
         }
 
@@ -360,7 +359,7 @@ public class MenuManager
 
         var ok = await _productService.UpdateAsync(existing);
         Console.WriteLine(ok ? "Produkt uppdaterad!" : "Uppdateringen misslyckades");
-        Thread.Sleep(1000);
+        await Task.Delay(1000);
         await ShowProductManagementMenuAsync();
 
     }
@@ -372,7 +371,7 @@ public class MenuManager
         if (!int.TryParse(Console.ReadLine(), out var id))
         {
             Console.WriteLine("Ogiltligt ID");
-            Thread.Sleep(1000);
+            await Task.Delay(1000);
             await ShowProductManagementMenuAsync();
         }
 
@@ -384,7 +383,7 @@ public class MenuManager
             case ConsoleKey.Enter:
                 var ok = await _productService.DeleteAsync(id);
                 Console.WriteLine(ok ? "Produkten borttagen!" : "Bortttagning misslyckades");
-                Thread.Sleep(1000);
+                await Task.Delay(1000);
                 await ShowProductManagementMenuAsync();
                 break;
             case ConsoleKey.Escape:
@@ -792,7 +791,7 @@ public class MenuManager
     async Task UpdatePaymentMethodAsync(List<PaymentMethod> methods)
     {
         Console.Clear();
-        Console.Write("Ange ID för metod att ändra: ");
+        Console.Write("Vilken metod skulle fu vilja ändra? ID: ");
         if(int.TryParse(Console.ReadLine(), out var id))
         {
             var method = methods.FirstOrDefault(m => m.Id == id);
@@ -813,7 +812,7 @@ public class MenuManager
     async Task DeletePaymentMethodAsync(List<PaymentMethod> methods)
     {
         Console.Clear();
-        Console.Write("Ange ID för metod att ta bort: ");
+        Console.Write("Vilken metod vill du ta bort? Ange id: ");
         if (int.TryParse(Console.ReadLine(), out var id))
         {
             var method = methods.FirstOrDefault(m => m.Id == id);
