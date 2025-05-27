@@ -531,9 +531,15 @@ public class MenuManager
             Console.WriteLine($"{item.Article.Name,-20} x{item.Quantity,2} = {lineTotal,6} kr");
         }
         Console.WriteLine(new string('-', 40));
-        var total = items.Sum(i => i.Article.Price * i.Quantity);
-        Console.WriteLine($"Totalt: {total} kr");
-        Console.WriteLine();
+        //var total = items.Sum(i => i.Article.Price * i.Quantity);
+        //Console.WriteLine($"Totalt: {total} kr");
+        var net = items.Sum(i => i.Article.Price * i.Quantity);
+        const decimal moms = 0.25m;
+        var medMoms = Math.Round(net * moms, 2);
+        var total = net + medMoms;
+        Console.WriteLine($"Summa exkl. moms: {net,8:N2} kr");
+        Console.WriteLine($"Moms ({moms * 100}%): {medMoms,2:N2} kr");
+        Console.WriteLine($"Totalt med moms: {total,8:N2} kr\n");
 
         await Task.Delay(2000);
 

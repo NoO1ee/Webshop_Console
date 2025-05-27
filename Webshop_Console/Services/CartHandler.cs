@@ -11,6 +11,7 @@ public class CartHandler
 {
     readonly MyDbContext _db;
     readonly List<CartItem> _items = new();
+    const decimal Moms = 0.25m;
 
     public CartHandler(MyDbContext db) => _db = db;
 
@@ -40,18 +41,24 @@ public class CartHandler
         if(!_items.Any())
             return null;
 
+        var net = _items.Sum(i => i.Article.Price * i.Quantity);
+        var moms = Math.Round(net * Moms, 2);
+
+
         var order = new OrderModel
         {
             UserId = user.Id,
             OrderDate = DateTime.Now,
-            Items = _items.Select(i => new OrderItem 
-            { 
-                ArticleId = i.Article.Id, 
-                Quantity = i.Quantity, 
+            Net = net,
+            Vat = moms,
+            TotalAmount = net + moms,
+            Items = _items.Select(i => new OrderItem
+            {
+                ArticleId = i.Article.Id,
+                Quantity = i.Quantity,
                 PriceAtPurchase = i.Article.Price * i.Quantity,
                 UnitPrice = i.Article.Price
             }).ToList(),
-            TotalAmount = _items.Sum(i => i.Article.Price * i.Quantity)
         };
 
         await _db.Orders.AddAsync(order);
