@@ -61,5 +61,15 @@ public class ProductHandler
         await _db.SaveChangesAsync();
         return true;
     }
+
+    public async Task<Dictionary<int, int>> GetSalesBuProductAsync()
+    {
+        return await _db.OrderItems.GroupBy(oi => oi.ArticleId).Select(g => new
+        {
+            ArticleID = g.Key,
+            TotalSold = g.Sum(oi => oi.Quantity)
+        }
+        ).ToDictionaryAsync(x => x.ArticleID, x => x.TotalSold);
+    }
     
 }

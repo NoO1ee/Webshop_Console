@@ -126,7 +126,7 @@ public class MenuManager
         options.Add(Option("Redigera kontaktuppgifter", ManageProfileAsync));
         options.Add(Option("Se mina ordrar", ShowMyOrdersAsync));
         options.Add(LogoutOption());
-        return Menu.ShowMenu("Användarpanel", "Huvudmenu", options.ToArray());
+        return Menu.ShowMenu("Användarpanel", "DeDuckers", options.ToArray());
     }
 
     Task ShowProductManagementMenuAsync()
@@ -251,16 +251,21 @@ public class MenuManager
     async Task ListProductsAsync()
     {
         var products = await _productService.GetAllAsync();
+        var salesByProduct = await _productService.GetSalesBuProductAsync();
+
+        var sorted = products.OrderByDescending(p => salesByProduct.TryGetValue(p.Id, out var count) ? count : 0).ToList();
+
         Console.Clear();
         Console.ForegroundColor = ConsoleColor.Green;
-        Console.WriteLine($"ID │ Namn {new string(' ', 16)}│ Pris {new string(' ', 6)}│ Leverantör {new string(' ', 8)}│ Enhet {new string(' ', 5)}│ Lagersaldo");
-        Console.WriteLine(new string('⎯', 90));
+        Console.WriteLine($"ID │ Namn {new string(' ', 16)}│ Pris {new string(' ', 6)}│ Leverantör {new string(' ', 8)}│ Enhet {new string(' ', 5)}│ Lagersaldo {new string(' ', 5)}│ Antal sålda");
+        Console.WriteLine(new string('⎯', 100));
         Console.ResetColor();
-        foreach (var p in products)
+        foreach (var p in sorted)
         {
-            Console.WriteLine(new string('⎯', 90));
-            Console.WriteLine($"{p.Id,-2} │ {p.Name,-20} │ {p.Price,-10} │ {p.Supplier?.Name,-18} │ {p.Unit?.Name,-10} │ {p.Storage}");
-            Console.WriteLine(new string('⎯', 90));
+            salesByProduct.TryGetValue(p.Id, out var salesCount);
+            Console.WriteLine(new string('⎯', 100));
+            Console.WriteLine($"{p.Id,-2} │ {p.Name,-20} │ {p.Price,-10} │ {p.Supplier?.Name,-18} │ {p.Unit?.Name,-10} │ {p.Storage,-10} │ {salesCount,5} st");
+            Console.WriteLine(new string('⎯', 100));
         }
         Console.WriteLine();
         Console.WriteLine("Tryck valfri tangent för att återgå");
@@ -507,6 +512,8 @@ public class MenuManager
         var total = items.Sum(i => i.Article.Price * i.Quantity);
         Console.WriteLine($"Totalt: {total} kr");
         Console.WriteLine();
+
+        await Task.Delay(2000);
 
         var options = new[]
         {

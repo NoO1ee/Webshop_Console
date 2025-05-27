@@ -33,16 +33,6 @@ public class CartHandler
         }
     }
 
-    public void RemoveFromCart(int articleId, int quantity = 1)
-    {
-        var existing = _items.FirstOrDefault(i => i.Article.Id == articleId);
-        if (existing == null)
-            return;
-        existing.Quantity -= quantity;
-        if(existing.Quantity <= 0)
-            _items.Remove(existing);
-    }
-
     public IReadOnlyList<CartItem> GetItems() => _items.AsReadOnly();
 
     public async Task<OrderModel?> CheckoutAsync(UserModel user)
