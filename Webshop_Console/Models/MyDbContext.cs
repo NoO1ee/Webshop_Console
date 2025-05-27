@@ -60,12 +60,25 @@ public class MyDbContext : DbContext
 
         modelBuilder.Entity<SupplierModel>().HasData(
             new SupplierModel { Id = 1, Name = "SpyVer"},
-            new SupplierModel { Id = 2, Name = "Assultis"}
+            new SupplierModel { Id = 2, Name = "Assultis"},
+            new SupplierModel { Id = 3, Name = "Defensia" },
+            new SupplierModel { Id = 4, Name = "TechnoQuack" },
+            new SupplierModel { Id = 5, Name = "MysticMallard" },
+            new SupplierModel { Id = 6, Name = "Elemental Forces" },
+            new SupplierModel { Id = 7, Name = "Nature's Guardians" },
+            new SupplierModel { Id = 8, Name = "Shadow Syndicate" },
+            new SupplierModel { Id = 9, Name = "Fighter's Forge" }
         );
 
         modelBuilder.Entity<UnitModel>().HasData(
-            new UnitModel { Id = 1, Name = "Styck", Symbol = "St"},
-            new UnitModel { Id = 2, Name = "Kilo", Symbol = "Kg"}
+            new UnitModel { Id = 1, Name = "Healer", Symbol = "Präst"},
+            new UnitModel { Id = 2, Name = "Assassin", Symbol = "Mödare"},
+            new UnitModel { Id = 3, Name = "Tank", Symbol = "Sköld" },
+            new UnitModel { Id = 4, Name = "Mage", Symbol = "Magiker" },
+            new UnitModel { Id = 5, Name = "Warrior", Symbol = "Krigare" },
+            new UnitModel { Id = 6, Name = "Ranger", Symbol = "Bågskytt" },
+            new UnitModel { Id = 7, Name = "Engineer", Symbol = "Mekaniker" }
+
         );
 
         modelBuilder.Entity<Discount>().HasData(
@@ -78,6 +91,20 @@ public class MyDbContext : DbContext
             new CategoryModel { Id = 1, Name = "Legendarisk"},
             new CategoryModel { Id = 2, Name = "Episk"},
             new CategoryModel { Id = 3, Name = "Basic"}
+        );
+
+        modelBuilder.Entity<PaymentMethod>().HasData(
+        
+            new PaymentMethod { Id = 1, Name = "Kortbetalning"},
+            new PaymentMethod { Id = 2, Name = "Swish"},
+            new PaymentMethod { Id = 3, Name = "Faktura"},
+            new PaymentMethod { Id = 4, Name = "PayPal" },
+            new PaymentMethod { Id = 5, Name = "Kryptovaluta" },
+            new PaymentMethod { Id = 6, Name = "Kontant" },
+            new PaymentMethod { Id = 7, Name = "Delbetalning" },
+            new PaymentMethod { Id = 8, Name = "Presentkort" },
+            new PaymentMethod { Id = 9, Name = "Autogiro" },
+            new PaymentMethod { Id = 10, Name = "Adex" }
         );
 
         modelBuilder.Entity<ArticleModel>().HasData(

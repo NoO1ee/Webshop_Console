@@ -76,5 +76,36 @@ public class ProductHandler
         }
         ).ToDictionaryAsync(x => x.ArticleID, x => x.TotalSold);
     }
-    
+
+    public async Task<List<CategoryModel>> GetAllCategoriesAsync() => await _db.Set<CategoryModel>().OrderBy(c => c.Name).ToListAsync();
+
+    public async Task<CategoryModel> CreateCategoryASync(string name)
+    {
+        var category = new CategoryModel { Name = name };
+        await _db.AddAsync(category);
+        await _db.SaveChangesAsync();
+        return category;
+    }
+
+    public async Task<bool> UpdateCategoryAsync(int id, string name)
+    {
+        var category = await _db.Set<CategoryModel>().FindAsync(id);
+        if(category == null) 
+            return false;
+
+        category.Name = name;
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteCategoryAsync(int id)
+    {
+        var category = await _db.Set<CategoryModel>().FindAsync(id);
+        if(category == null) 
+            return false;
+        _db.Remove(category);
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
 }

@@ -99,6 +99,7 @@ public class MenuManager
             Option("Visa ordrar", ManageOrderAsync),
             Option("Hantera Artiklar", ShowProductManagementMenuAsync),
             Option("Hantera användares roller", ManageUserRolesAsync),
+            Option("Hantera Kategorier", ManageCategoryAsync),
             Option("Hantera Betalningsmetoder", ManagePaymentMethodsAsync),
             LogoutOption()
         };
@@ -320,7 +321,6 @@ public class MenuManager
             Name = name!,
             EanCode = eanCode!,
             ArticleCode = artNumber!,
-            //Category = category!,
             CategoryId = categoryId,
             Storage = totalStorage,
             Bio = bio!,
@@ -431,22 +431,13 @@ public class MenuManager
         var options = new List<(string, Action)>();
         
         options.Add(Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)));
-        foreach (var c in categories.Result)
+        foreach (var c in categories.Result.OrderBy(x => x.Id))
             options.Add(Option(c.Name, () => ListAndSelectProductsAsync(c.Id)));
 
         options.Add(Option("Tillbaka", ShowUserMenuAsync));
 
         await Menu.ShowMenu("Produktmeny", "Välj kategori", options.ToArray());
 
-        //var options = new[]
-        //{
-        //    Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)),
-        //    Option("Legendarisk", () => ListAndSelectProductsAsync(1)),
-        //    Option("Episk", () => ListAndSelectProductsAsync(2)),
-        //    Option("Basic", () => ListAndSelectProductsAsync(3)),
-        //    Option("Tillbaka", ShowUserMenuAsync)
-        //};
-        //return Menu.ShowMenu("Produktmeny", "Välj kategori", options);
     }
 
     async Task ListAndSelectProductsAsync(int? category)
@@ -814,6 +805,36 @@ public class MenuManager
         await ManagePaymentMethodsAsync();
     }
 
+    async Task ManageCategoryAsync()
+    {
+        Console.Clear();
+        var category = await _productService.GetAllCategoriesAsyc();
+        Console.WriteLine("Kategorier:");
+        foreach (var m in category)
+        {
+            Console.WriteLine($"{m.Id}: {m.Name}");
+        }
+        Console.WriteLine();
+        Console.WriteLine("A = lägg till, U = uppdatera, D = Ta bort, Enter = Tillbaka");
+        var key = Console.ReadKey(true).Key;
+        switch (key)
+        {
+            case ConsoleKey.A:
+                await AddCategoryAsync();
+                break;
+            case ConsoleKey.U:
+                await UpdateCategoryAsync(category);
+                break;
+            case ConsoleKey.D:
+                await DeleteCategoryAsync(category);
+                break;
+            case ConsoleKey.Enter:
+                await ShowOwnerMenuAsync(_currentUser!);
+                break;
+        }
+        await ManageCategoryAsync();
+    }
+
 
     async Task AddPaymentMethodAsync()
     {
@@ -866,6 +887,62 @@ public class MenuManager
         }
     }
 
+    #endregion
+
+    #region Kategori funktioner
+
+    async Task AddCategoryAsync()
+    {
+        Console.Clear();
+        Console.Write("Kategori namn: ");
+        var name = Console.ReadLine()?.Trim();
+        if(!string.IsNullOrEmpty(name))
+            await _productService.CreateCategoryASync(name!);
+        else
+            Console.WriteLine("Ogitligt namn");
+    }
+
+    async Task UpdateCategoryAsync(List<CategoryModel> list)
+    {
+        Console.Clear();
+        Console.Write("Vilket id vill du ändra på?: ");
+        if (int.TryParse(Console.ReadLine(), out var id))
+        {
+            var category = list.FirstOrDefault(c => c.Id == id);
+            if (category != null)
+            {
+                Console.Write($"Nytt namn [{category.Name}]: ");
+                var name = Console.ReadLine()?.Trim();
+                if (!string.IsNullOrEmpty(name))
+                    category.Name = name;
+                else
+                    Console.WriteLine("Ogiltigt namn");
+            }
+            else
+                Console.WriteLine("Ingen sådan kategori hittades");
+        }
+    }
+
+    async Task DeleteCategoryAsync(List<CategoryModel> list)
+    {
+        Console.Clear();
+        Console.Write("Vilket ID vill du ta bort?: ");
+
+        if(int.TryParse(Console.ReadLine(), out var id))
+        {
+            var category = list.FirstOrDefault(c => c.Id == id);
+            if(category != null)
+            {
+                Console.Write($"Är du säker på att du vill ta bort '{category.Name}'? (Y/N): ");
+                var key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.Y)
+                    await _productService.DeleteCategoryAsync(category.Id);
+            }
+            else
+                Console.WriteLine("Ingen sådan kategori hittades");
+        }
+    }
+    
     #endregion
 }
 class AuthorityComparer : IEqualityComparer<AuthorityModel>
