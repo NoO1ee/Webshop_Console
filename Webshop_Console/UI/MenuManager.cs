@@ -275,6 +275,10 @@ public class MenuManager
 
     async Task CreateProductAsync()
     {
+        var categories = await _productService.GetAllCategoriesAsyc();
+        var suppliers = await _db.Suppliers.OrderBy(s => s.Id).ToListAsync();
+        var units = await _db.Units.OrderBy(u => u.Id).ToListAsync();
+
         Console.Clear();
         Console.Write("Namn: ");
         var name = Console.ReadLine()?.Trim();
@@ -282,27 +286,42 @@ public class MenuManager
         var eanCode = Console.ReadLine()?.Trim();
         Console.Write("Artikel nummer: ");
         var artNumber = Console.ReadLine()?.Trim();
-        Console.Write("Kategori: ");
-        var category = Console.ReadLine()?.Trim();
+        //Console.Write("Kategori: ");
+        //var category = Console.ReadLine()?.Trim();
         Console.Write("Antal: ");
         var totalStorage = int.Parse(Console.ReadLine()!);
         Console.Write("Beskrivning: ");
         var bio = Console.ReadLine()?.Trim();
         Console.Write("Pris: ");
         var price = decimal.Parse(Console.ReadLine()!);
+
+        Console.WriteLine("Tillgänliga Kategorier:");
+        categories.OrderBy(c => c.Id).ToList().ForEach(categories => Console.WriteLine($"{categories.Id}: {categories.Name}"));
+        Console.Write("Katergori ID: ");
+        var categoryId = int.Parse(Console.ReadLine()!);
+
+        Console.WriteLine("Tillgängliga leverantörer:");
+        suppliers.OrderBy(s => s.Id).ToList().ForEach(s => Console.WriteLine($"{s.Id}: {s.Name}"));
         Console.Write("Leverantörs-ID: ");
         var supId = int.Parse(Console.ReadLine()!);
+
+        Console.WriteLine("Tillgängliga enheter:");
+        units.OrderBy(e => e.Id).ToList().ForEach(u => Console.WriteLine($"{u.Id}: {u.Name}"));
         Console.Write("Enhets-ID: ");
         var unitId = int.Parse(Console.ReadLine()!);
+
         Console.Write("Visas startsidan? (Y/N): ");
         var showOnStart = Console.ReadKey(true).Key == ConsoleKey.Y;
+
+        
 
         var article = new ArticleModel
         {
             Name = name!,
             EanCode = eanCode!,
             ArticleCode = artNumber!,
-            Category = category!,
+            //Category = category!,
+            CategoryId = categoryId,
             Storage = totalStorage,
             Bio = bio!,
             Price = price,
@@ -405,30 +424,42 @@ public class MenuManager
 
     Task ShowProductsAsync() => ShowProductsFilterMenuAsync();
 
-    Task ShowProductsFilterMenuAsync()
+    async Task ShowProductsFilterMenuAsync()
     {
-        var options = new[]
-        {
-            Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)),
-            Option("Legendarisk", () => ListAndSelectProductsAsync("Legendarisk")),
-            Option("Episk", () => ListAndSelectProductsAsync("Episk")),
-            Option("Basic", () => ListAndSelectProductsAsync("Basic")),
-            Option("Tillbaka", ShowUserMenuAsync)
-        };
-        return Menu.ShowMenu("Produktmeny", "Välj kategori", options);
+        var categories = _productService.GetAllCategoriesAsyc();
+
+        var options = new List<(string, Action)>();
+        
+        options.Add(Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)));
+        foreach (var c in categories.Result)
+            options.Add(Option(c.Name, () => ListAndSelectProductsAsync(c.Id)));
+
+        options.Add(Option("Tillbaka", ShowUserMenuAsync));
+
+        await Menu.ShowMenu("Produktmeny", "Välj kategori", options.ToArray());
+
+        //var options = new[]
+        //{
+        //    Option("Visa alla produkter", () => ListAndSelectProductsAsync(null)),
+        //    Option("Legendarisk", () => ListAndSelectProductsAsync(1)),
+        //    Option("Episk", () => ListAndSelectProductsAsync(2)),
+        //    Option("Basic", () => ListAndSelectProductsAsync(3)),
+        //    Option("Tillbaka", ShowUserMenuAsync)
+        //};
+        //return Menu.ShowMenu("Produktmeny", "Välj kategori", options);
     }
 
-    async Task ListAndSelectProductsAsync(string? category)
+    async Task ListAndSelectProductsAsync(int? category)
     {
         Console.Clear();
         List<ArticleModel> products;
         
-        if(string.IsNullOrEmpty(category))
-            products = await _productService.GetAllAsync();
+        if(category.HasValue)
+            products = await _productService.GetByCategoryIdAsync(category.Value);
         else
-            products = await _productService.GetByCategoryAsync(category);
+            products = await _productService.GetAllAsync();
 
-        Console.WriteLine(category == null ? "Alla produkter:" : $"Produkter - katergori: {category}");
+        Console.WriteLine(category.HasValue ? $"Produkter - katergori: {category.Value}" : "Alla produkter:");
         Console.WriteLine(new string('-', 40));
 
         foreach (var product in products)
@@ -455,7 +486,7 @@ public class MenuManager
             }
             else
             {
-                Console.WriteLine("Hittade ingen produkt med det ID eller namn.");
+                Console.WriteLine("Hittade inge produkt.");
                 await Task.Delay(1000);
             }
         }

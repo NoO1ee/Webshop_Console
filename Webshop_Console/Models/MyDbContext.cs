@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Webshop_Console.Models;
 
@@ -38,10 +39,18 @@ public class MyDbContext : DbContext
             .HasForeignKey(a => a.DiscountId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<ArticleModel>()
+            .HasOne(a => a.Category)
+            .WithMany(c => c.Articles)
+            .HasForeignKey(a => a.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<OrderModel>()
             .HasOne(o => o.Payment)
             .WithOne(o => o.Order)
             .HasForeignKey<PaymentModel>(p => p.OrderId);
+
+        
 
         modelBuilder.Entity<AuthorityModel>().HasData(
             new AuthorityModel { Id = 1, Name = "User", IsAdmin = false, IsOwner = false },
@@ -64,5 +73,209 @@ public class MyDbContext : DbContext
             new Discount { Id = 2, Name = "Silver medlem", Percentage = 20},
             new Discount { Id = 3, Name = "Guld medlem", Percentage = 50}
         );
+
+        modelBuilder.Entity<CategoryModel>().HasData(
+            new CategoryModel { Id = 1, Name = "Legendarisk"},
+            new CategoryModel { Id = 2, Name = "Episk"},
+            new CategoryModel { Id = 3, Name = "Basic"}
+        );
+
+        modelBuilder.Entity<ArticleModel>().HasData(
+    new ArticleModel
+    {
+        Id = 1,
+        Name = "Quenton Quack",
+        EanCode = "30291823",
+        ArticleCode = "344233",
+        Storage = 200,
+        Price = 3000m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Skuggornas mördare - osynlig och snabb",
+        CategoryId = 3
+    },
+    new ArticleModel
+    {
+        Id = 2,
+        Name = "Beatrix Drake",
+        EanCode = "20230304",
+        ArticleCode = "430233",
+        Storage = 2,
+        Price = 50000m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Mästarens prickskytt - ser från mils avstånd",
+        CategoryId = 1 
+    },
+    new ArticleModel
+    {
+        Id = 3,
+        Name = "Agent Mallory Mallard",
+        EanCode = "23232123",
+        ArticleCode = "414663",
+        Storage = 42,
+        Price = 4499m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = true,
+        Bio = "Spion-anka - infiltrerar fiendelinjer",
+        CategoryId = 3 
+    },
+    new ArticleModel
+    {
+        Id = 4,
+        Name = "Archibald Quill",
+        EanCode = "12312312",
+        ArticleCode = "748454",
+        Storage = 32,
+        Price = 15000m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Skogens väktare - bågskytt och överlevare",
+        CategoryId = 2 
+    },
+    new ArticleModel
+    {
+        Id = 5,
+        Name = "Magnus Mallard",
+        EanCode = "44512315",
+        ArticleCode = "112577",
+        Storage = 15,
+        Price = 12999m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = true,
+        Bio = "Elementarkrigare - kontrollerar eld och is",
+        CategoryId = 2
+    },
+    new ArticleModel
+    {
+        Id = 6,
+        Name = "Helga Mallard",
+        EanCode = "04912454",
+        ArticleCode = "245552",
+        Storage = 16,
+        Price = 5600m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Helande räddare - botar och stärker allierade",
+        CategoryId = 3
+    },
+    new ArticleModel
+    {
+        Id = 7,
+        Name = "Bruno Beak",
+        EanCode = "07669964",
+        ArticleCode = "692042",
+        Storage = 6,
+        Price = 4420m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Oövervinnerlig - drar åt sig all fiendeuppmärksamhet",
+        CategoryId = 3
+    },
+    new ArticleModel
+    {
+        Id = 8,
+        Name = "Greta Quack",
+        EanCode = "50042244",
+        ArticleCode = "024132",
+        Storage = 4,
+        Price = 11000m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Mekaniker-anka - bygger fällor och turrets",
+        CategoryId = 2
+    },
+    new ArticleModel
+    {
+        Id = 9,
+        Name = "Finn Feather",
+        EanCode = "12499902",
+        ArticleCode = "400234",
+        Storage = 1,
+        Price = 90300m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Ismagikern - fryser fiender på plats",
+        CategoryId = 1
+    },
+    new ArticleModel
+    {
+        Id = 10,
+        Name = "Roland Drake",
+        EanCode = "29490501",
+        ArticleCode = "932491",
+        Storage = 3,
+        Price = 159000m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Vildsint kämpe - kullkastar allt som står i vägen",
+        CategoryId = 1
+    },
+    new ArticleModel
+    {
+        Id = 11,
+        Name = "Lyra Quill",
+        EanCode = "91204329",
+        ArticleCode = "233993",
+        Storage = 1,
+        Price = 1500m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Helig präst - välsignar och fördriver mörker",
+        CategoryId = 3
+    },
+    new ArticleModel
+    {
+        Id = 12,
+        Name = "Shadow Mallard",
+        EanCode = "49402123",
+        ArticleCode = "499532",
+        Storage = 3,
+        Price = 4030m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Listig tjuv - snor skatter och smyger förbi vakter",
+        CategoryId = 3
+    },
+    new ArticleModel
+    {
+        Id = 13,
+        Name = "Fighter Ducker",
+        EanCode = "590239583",
+        ArticleCode = "230032",
+        Storage = 2,
+        Price = 4223m,
+        SupplierId = 1,
+        UnitId = 1,
+        DiscountId = 1,
+        IsFeatured = false,
+        Bio = "Test Anka",
+        CategoryId = 2 
+    }
+);
     }
 }

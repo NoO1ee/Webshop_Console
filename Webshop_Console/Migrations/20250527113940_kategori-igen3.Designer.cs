@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Webshop_Console.Models;
 
@@ -11,9 +12,11 @@ using Webshop_Console.Models;
 namespace Webshop_Console.Migrations
 {
     [DbContext(typeof(MyDbContext))]
-    partial class MyDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250527113940_kategori-igen3")]
+    partial class kategoriigen3
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -91,203 +94,6 @@ namespace Webshop_Console.Migrations
                     b.HasIndex("UnitId");
 
                     b.ToTable("Articles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            ArticleCode = "344233",
-                            Bio = "Skuggornas mördare - osynlig och snabb",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "30291823",
-                            IsFeatured = false,
-                            Name = "Quenton Quack",
-                            Price = 3000m,
-                            Storage = 200,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 2,
-                            ArticleCode = "430233",
-                            Bio = "Mästarens prickskytt - ser från mils avstånd",
-                            CategoryId = 1,
-                            DiscountId = 1,
-                            EanCode = "20230304",
-                            IsFeatured = false,
-                            Name = "Beatrix Drake",
-                            Price = 50000m,
-                            Storage = 2,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 3,
-                            ArticleCode = "414663",
-                            Bio = "Spion-anka - infiltrerar fiendelinjer",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "23232123",
-                            IsFeatured = true,
-                            Name = "Agent Mallory Mallard",
-                            Price = 4499m,
-                            Storage = 42,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 4,
-                            ArticleCode = "748454",
-                            Bio = "Skogens väktare - bågskytt och överlevare",
-                            CategoryId = 2,
-                            DiscountId = 1,
-                            EanCode = "12312312",
-                            IsFeatured = false,
-                            Name = "Archibald Quill",
-                            Price = 15000m,
-                            Storage = 32,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 5,
-                            ArticleCode = "112577",
-                            Bio = "Elementarkrigare - kontrollerar eld och is",
-                            CategoryId = 2,
-                            DiscountId = 1,
-                            EanCode = "44512315",
-                            IsFeatured = true,
-                            Name = "Magnus Mallard",
-                            Price = 12999m,
-                            Storage = 15,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 6,
-                            ArticleCode = "245552",
-                            Bio = "Helande räddare - botar och stärker allierade",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "04912454",
-                            IsFeatured = false,
-                            Name = "Helga Mallard",
-                            Price = 5600m,
-                            Storage = 16,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 7,
-                            ArticleCode = "692042",
-                            Bio = "Oövervinnerlig - drar åt sig all fiendeuppmärksamhet",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "07669964",
-                            IsFeatured = false,
-                            Name = "Bruno Beak",
-                            Price = 4420m,
-                            Storage = 6,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 8,
-                            ArticleCode = "024132",
-                            Bio = "Mekaniker-anka - bygger fällor och turrets",
-                            CategoryId = 2,
-                            DiscountId = 1,
-                            EanCode = "50042244",
-                            IsFeatured = false,
-                            Name = "Greta Quack",
-                            Price = 11000m,
-                            Storage = 4,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 9,
-                            ArticleCode = "400234",
-                            Bio = "Ismagikern - fryser fiender på plats",
-                            CategoryId = 1,
-                            DiscountId = 1,
-                            EanCode = "12499902",
-                            IsFeatured = false,
-                            Name = "Finn Feather",
-                            Price = 90300m,
-                            Storage = 1,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 10,
-                            ArticleCode = "932491",
-                            Bio = "Vildsint kämpe - kullkastar allt som står i vägen",
-                            CategoryId = 1,
-                            DiscountId = 1,
-                            EanCode = "29490501",
-                            IsFeatured = false,
-                            Name = "Roland Drake",
-                            Price = 159000m,
-                            Storage = 3,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 11,
-                            ArticleCode = "233993",
-                            Bio = "Helig präst - välsignar och fördriver mörker",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "91204329",
-                            IsFeatured = false,
-                            Name = "Lyra Quill",
-                            Price = 1500m,
-                            Storage = 1,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 12,
-                            ArticleCode = "499532",
-                            Bio = "Listig tjuv - snor skatter och smyger förbi vakter",
-                            CategoryId = 3,
-                            DiscountId = 1,
-                            EanCode = "49402123",
-                            IsFeatured = false,
-                            Name = "Shadow Mallard",
-                            Price = 4030m,
-                            Storage = 3,
-                            SupplierId = 1,
-                            UnitId = 1
-                        },
-                        new
-                        {
-                            Id = 13,
-                            ArticleCode = "230032",
-                            Bio = "Test Anka",
-                            CategoryId = 2,
-                            DiscountId = 1,
-                            EanCode = "590239583",
-                            IsFeatured = false,
-                            Name = "Fighter Ducker",
-                            Price = 4223m,
-                            Storage = 2,
-                            SupplierId = 1,
-                            UnitId = 1
-                        });
                 });
 
             modelBuilder.Entity("Webshop_Console.Models.AuthorityModel", b =>

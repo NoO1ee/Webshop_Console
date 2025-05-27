@@ -5,11 +5,13 @@ public class ArticleModel : IDModel
     public string? Name { get; set; }
     public string EanCode { get; set; } = string.Empty;
     public string ArticleCode { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
     public int Storage { get; set; } = 0;
     public string? Bio { get; set; }
     public decimal Price { get; set; }
     public bool IsFeatured { get; set; } = false;
+
+    public int? CategoryId { get; set;}
+    public CategoryModel? Category { get; set; } = null!;
 
     public int SupplierId { get; set; }
     public SupplierModel Supplier { get; set; } = null!;

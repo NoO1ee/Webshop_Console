@@ -15,18 +15,23 @@ public class ProductHandler
 
     public async Task<List<ArticleModel>> GetAllAsync()
     {
-        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).ToListAsync();
+        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).Include(a => a.Category).ToListAsync();
     }
 
-    public async Task<List<ArticleModel>> GetByCategoryAsync(string category)
+    public async Task<List<ArticleModel>> GetByCategoryIdAsync(int category)
     {
-        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).Where(a => a.Category.ToLower() == category.ToLower()).ToListAsync();
+        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).Include(a => a.Category).Where(a => a.CategoryId == category).ToListAsync();
     }
 
     public async Task<ArticleModel?> GetByIdAsync(int id)
     {
-        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).FirstOrDefaultAsync(a => a.Id == id);
+        return await _db.Articles.Include(a => a.Supplier).Include(a => a.Unit).Include(a => a.Category).FirstOrDefaultAsync(a => a.Id == id);
 
+    }
+
+    public async Task<List<CategoryModel>> GetAllCategoriesAsyc()
+    {
+        return await _db.Set<CategoryModel>().OrderBy(c => c.Name).ToListAsync();
     }
 
     public async Task AddAsync(ArticleModel article)
