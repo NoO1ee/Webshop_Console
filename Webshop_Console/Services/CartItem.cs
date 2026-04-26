@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,5 +10,6 @@ namespace Webshop_Console.Services;
 public class CartItem
 {
     public ArticleModel Article { get; set; }
+    public int Quantity { get; set; }
     public int Quantity { get; set; }
 }
